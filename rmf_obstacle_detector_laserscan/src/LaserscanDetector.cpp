@@ -404,7 +404,8 @@ void LaserscanDetector::process()
   for (const auto& scan : scan_obstacles)
   {
     rmf_obstacle_msgs::msg::Obstacle obstacle;
-    obstacle.header = _latest_scan->header;
+    obstacle.header.frame_id = _latest_scan->header.frame_id;
+    obstacle.header.stamp = this->get_clock()->now();
     obstacle.id = id;
     obstacle.source = "rmf_obstacle_detector_laserscan";
     obstacle.level_name = _level_name;
