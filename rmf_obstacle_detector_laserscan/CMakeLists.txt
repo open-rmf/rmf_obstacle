@@ -15,6 +15,7 @@ set(dep_pkgs
   rclcpp_lifecycle
   rmf_obstacle_msgs
   sensor_msgs
+  laser_geometry
 )
 foreach(pkg ${dep_pkgs})
   find_package(${pkg} REQUIRED)
@@ -30,6 +31,7 @@ target_link_libraries(${PROJECT_NAME}
     ${rclcpp_components_LIBRARIES}
     ${rmf_obstacle_msgs_LIBRARIES}
     ${sensor_msgs_LIBRARIES}
+    ${laser_geometry_LIBRARIES}
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -41,6 +43,7 @@ target_include_directories(${PROJECT_NAME}
     ${rclcpp_components_INCLUDE_DIRS}
     ${rmf_obstacle_msgs_INCLUDE_DIRS}
     ${sensor_msgs_INCLUDE_DIRS}
+    ${laser_geometry_INCLUDE_DIRS}
 )
 
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
