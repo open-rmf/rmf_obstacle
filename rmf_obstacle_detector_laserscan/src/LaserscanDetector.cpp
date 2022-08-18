@@ -23,12 +23,7 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 
-#include <sensor_msgs/msg/point_cloud2.hpp>
-#include <sensor_msgs/point_cloud2_iterator.hpp>
-
 #include <rclcpp_components/register_node_macro.hpp>
-
-#include <iostream>
 
 //==============================================================================
 namespace {
@@ -69,7 +64,6 @@ struct ScanObstacle
         p.x = r * std::cos(theta);
         p.y = r * std::sin(theta);
         p.z = 0.0;
-        std::cout << "  [get_point]: r: " << r << " x:" << p.x << " y:" << p.y <<std::endl;
         return p;
       };
 
@@ -91,7 +85,7 @@ struct ScanObstacle
 } // anonymous namespace
 
 //==============================================================================
-auto LaserscanDetector::on_configure(const State& previous_state)
+auto LaserscanDetector::on_configure(const State& /*previous_state*/)
 -> CallbackReturn
 {
   RCLCPP_INFO(
@@ -126,27 +120,33 @@ auto LaserscanDetector::on_configure(const State& previous_state)
 }
 
 //==============================================================================
-auto LaserscanDetector::on_cleanup(const State& previous_state)
+auto LaserscanDetector::on_cleanup(const State& /*previous_state*/)
 -> CallbackReturn
 {
   RCLCPP_INFO(
     this->get_logger(), "Cleaning up...");
-  return CallbackReturn::SUCCESS;
+  _obs_pub.reset();
+  _scan_sub.reset();
+  _calibration_scans.clear();
+  _latest_scan.reset();
+  _calibrated_scan.ranges.clear();
+  _calibrated = false;
 
+  return CallbackReturn::SUCCESS;
 }
 
 //==============================================================================
-auto LaserscanDetector::on_shutdown(const State& previous_state)
+auto LaserscanDetector::on_shutdown(const State& /*previous_state*/)
 -> CallbackReturn
 {
   RCLCPP_INFO(
     this->get_logger(), "Shutting down...");
-  return CallbackReturn::SUCCESS;
 
+  return CallbackReturn::SUCCESS;
 }
 
 //==============================================================================
-auto LaserscanDetector::on_activate(const State& previous_state)
+auto LaserscanDetector::on_activate(const State& /*previous_state*/)
 -> CallbackReturn
 {
   RCLCPP_INFO(
@@ -156,21 +156,23 @@ auto LaserscanDetector::on_activate(const State& previous_state)
     this->get_logger(), "Activation successful. Waiting to receive %ld "
     "LaserScan messages on topic %s to begin calibration.",
     _calibration_sample_count, _scan_topic_name.c_str());
-  return CallbackReturn::SUCCESS;
 
+  return CallbackReturn::SUCCESS;
 }
 
 //==============================================================================
-auto LaserscanDetector::on_deactivate(const State& previous_state)
+auto LaserscanDetector::on_deactivate(const State& /*previous_state*/)
 -> CallbackReturn
 {
   RCLCPP_INFO(
     this->get_logger(), "Deactivating...");
+  _obs_pub->on_deactivate();
+
   return CallbackReturn::SUCCESS;
 }
 
 //==============================================================================
-auto LaserscanDetector::on_error(const State& previous_state)
+auto LaserscanDetector::on_error(const State& /*previous_state*/)
 -> CallbackReturn
 {
   RCLCPP_ERROR(
@@ -181,8 +183,7 @@ auto LaserscanDetector::on_error(const State& previous_state)
 //==============================================================================
 LaserscanDetector::LaserscanDetector(const rclcpp::NodeOptions& options)
 : LifecycleNode("laserscan_obstacle_detector", options),
-  _calibrated(false),
-  _projector(std::make_unique<laser_geometry::LaserProjection>())
+  _calibrated(false)
 {
   _range_threshold = this->declare_parameter("range_threshold", 1.0);
   RCLCPP_INFO(
@@ -216,10 +217,6 @@ LaserscanDetector::LaserscanDetector(const rclcpp::NodeOptions& options)
     this->get_logger(),
     "Setting parameter process_rate to %f hz", process_rate
   );
-  _process_period =
-    std::chrono::duration_cast<std::chrono::nanoseconds>(
-    std::chrono::duration<double, std::ratio<1>>(1.0 / process_rate));
-
 
   RCLCPP_INFO(this->get_logger(), "Waiting to configure...");
 
@@ -239,9 +236,8 @@ bool LaserscanDetector::calibrate()
   }
 
   // TODO(YV): Validate scans
-
-  std::size_t count = 1;
   _calibrated_scan = *(_calibration_scans.back());
+  // std::size_t count = 1;
   // auto it = _calibration_scans.begin(); ++it;
   // for (; it != _calibration_scans.end(); ++it)
   // {
@@ -315,15 +311,6 @@ void LaserscanDetector::process()
     _latest_scan->range_min, _latest_scan->range_max, _latest_scan->ranges.size()
   );
 
-  // We convert to cloud to help with computing cartesian position of points
-  // sensor_msgs::msg::PointCloud2 cloud;
-  // _projector->projectLaser(*_latest_scan, cloud, -1.0, laser_geometry::channel_option::None);
-  // RCLCPP_INFO(
-  //   this->get_logger(),
-  //   "Converted scan to cloud with %ld fields and %ld data entires",
-  //   cloud.fields.size(),
-  //   cloud.data.size()
-  // );
   std::vector<ScanObstacle> scan_obstacles = {};
   for (std::size_t i = 0; i < _calibrated_scan.ranges.size(); ++i)
   {

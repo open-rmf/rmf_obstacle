@@ -25,8 +25,6 @@
 #include <rmf_obstacle_msgs/msg/obstacles.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 
-#include "laser_geometry/laser_geometry.hpp"
-
 
 //==============================================================================
 class LaserscanDetector : public rclcpp_lifecycle::LifecycleNode
@@ -49,14 +47,12 @@ public:
 private:
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<Obstacles>> _obs_pub;
   rclcpp::Subscription<LaserScan>::SharedPtr _scan_sub;
-  rclcpp::TimerBase::SharedPtr _process_timer;
 
   double _range_threshold;
   double _min_obstacle_size;
 
   std::string _scan_topic_name;
   std::string _level_name;
-  std::chrono::nanoseconds _process_period;
 
   std::size_t _calibration_sample_count;
   std::vector<LaserScan::ConstSharedPtr> _calibration_scans;
@@ -65,8 +61,6 @@ private:
   LaserScan::ConstSharedPtr _latest_scan;
 
   bool _calibrated;
-
-  std::unique_ptr<laser_geometry::LaserProjection> _projector;
 
   void process();
   bool calibrate();

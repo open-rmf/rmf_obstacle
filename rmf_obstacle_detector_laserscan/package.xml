@@ -15,7 +15,6 @@
 
   <depend>rmf_obstacle_msgs</depend>
   <depend>sensor_msgs</depend>
-  <depend>laser_geometry</depend>
 
   <test_depend>ament_uncrustify</test_depend>
 
