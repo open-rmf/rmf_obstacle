@@ -212,14 +212,7 @@ LaserscanDetector::LaserscanDetector(const rclcpp::NodeOptions& options)
     "Setting parameter calibration_sample_count to %ld",
     _calibration_sample_count);
 
-  const double process_rate = this->declare_parameter("process_rate", 1.0);
-  RCLCPP_INFO(
-    this->get_logger(),
-    "Setting parameter process_rate to %f hz", process_rate
-  );
-
   RCLCPP_INFO(this->get_logger(), "Waiting to configure...");
-
 }
 
 //==============================================================================
