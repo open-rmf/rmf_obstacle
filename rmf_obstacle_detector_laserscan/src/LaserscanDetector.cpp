@@ -308,7 +308,8 @@ void LaserscanDetector::process()
     "## Processing latest_scan with angle_min: %.2f, angle_max: %.2f, angle_increment: %.6f, "
     "range_min: %.2f, range_max: %.2f, #ranges: %ld",
     _latest_scan->angle_min, _latest_scan->angle_max, _latest_scan->angle_increment,
-    _latest_scan->range_min, _latest_scan->range_max, _latest_scan->ranges.size()
+    _latest_scan->range_min, _latest_scan->range_max,
+    _latest_scan->ranges.size()
   );
 
   std::vector<ScanObstacle> scan_obstacles = {};
