@@ -1,11 +1,14 @@
 # rmf_obstacle_detectors
 Packages that infer the presence of obstacles from sensor inputs.
+* [rmf_obstacle_detector_laserscan](#rmfobstacledetectorlaserscan)
+* [rmf_human_detector_oakd](#rmfhumandetectoroakd)
+* [rmf_human_detector](#rmfhumandetector)
 
 ## rmf_obstacle_detector_laserscan
 ![](../media/rmf_obstacle_detector_laserscan.gif)
 
 
-A node that subscribes to `LaserScan` messages and publishes obstacles to `/rmf_obstacles`.
+A ROS 2 node that subscribes to `LaserScan` messages and publishes obstacles to `/rmf_obstacles`.
 
 The node is implemented as an`rclcpp::lifecycle_node` node where upon activation, it calibrates the surroundings based on the range values in the initial few `LaserScan` messages.
 This essentially becomes the "obstacle-free" configuration.
@@ -25,3 +28,33 @@ The node accepts the following parameters
 | `min_obstacle_size` | The minimum perceived size of an object for it to be considered an obstacle. | `0.75` meter |
 | `level_name` | The level(floor) name on which the scanner exists. | `L1` |
 | `calibration_sample_count` | The number of initial `LaserScan` messages to use for calibrating the "obstacle-free" configuration. | `10` |
+
+## rmf_human_detector_oakd
+![](../media/rmf_human_detector_oakd.gif)
+
+A ROS 2 node that detects humans via on-chip-inference on `OAK-D` cameras and publishes the detections over `/rmf_obstacles` as `rmf_obstacle_msgs::Obstacles` message.
+
+The node can be run either as a component within a ROS 2 container or as a standalone node.
+
+The component plugin is `rmf_human_detector_oakd::HumanDetector` and can be loaded into a `ComponentManager` via `ros2 component load <COMPONENT_MANAGER> rmf_human_detector_oakd::HumanDetector`.
+
+To launch as a standalone node,
+```bash
+ros2 launch rmf_human_detector_oakd human_detection.launch.xml blob_path:=<PATH_TO_MOBILENET-SSD_BLOB>
+```
+
+THe node has several configurable parameters documented in the [launch file](rmf_human_detector_oakd/launch/human_detector.launch.xml).
+The most important of which is `blob_path` as it holds the absolute path to the NN model for inference. See `depthai` documentation for more information on how the various pre-trained models can be obtained.
+It is recommended to use the [blobconverter](https://github.com/luxonis/blobconverter/) tool to obtain the `mobilenet-ssd_openvino_2021.4_6shave.blob` blob for inference.
+
+
+To visualize the detection frames, set `debug:=True`. Note: Frames will only be visualized when a human is actively detected.
+
+For more information on setup and troubleshooting see [here](rmf_human_detector_oakd/README.md)
+
+## rmf_human_detector
+![](../media/rmf_human_detector.gif)
+
+A ROS 2 node that subscribes to `sensor_msgs::Image` messages published by a monocular camera and runs `Yolo-V4` to detect the presence of humans. The relative pose of the humans with respect to the camera frame is estimated based on heuristics that can be configured through ROS 2 params.
+
+The use case for this node would be to detect crowds from existing CCTV cameras or vision sensors in the facility.
