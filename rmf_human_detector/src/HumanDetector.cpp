@@ -9,20 +9,19 @@ HumanDetector::HumanDetector() : Node("human_detector"), _data(std::make_shared<
   make_detector();
 
   _data->_image_detections_pub = this->create_publisher<sensor_msgs::msg::Image>(
-  "/" + _data->_camera_name + "/image_detections",
+  _data->_image_detections_topic,
   rclcpp::QoS(10).reliable()
   );
   _data->_detector->set_image_detections_pub(_data->_image_detections_pub);
 
   _data->_obstacles_pub = this->create_publisher<Obstacles>(
   "/rmf_obstacles",
-  rclcpp::QoS(10).reliable()
+  rclcpp::SensorDataQoS()
   );
 
-  const std::string camera_image_topic =  "/" +  _data->_camera_name + "/image_rect";
   _data->_image_sub = this->create_subscription<sensor_msgs::msg::Image>(
-  camera_image_topic,
-  1,
+  _data->_camera_image_topic,
+  rclcpp::SensorDataQoS(),
   [=](const sensor_msgs::msg::Image::ConstSharedPtr &msg)
   {
     // perform detections
@@ -38,10 +37,9 @@ HumanDetector::HumanDetector() : Node("human_detector"), _data(std::make_shared<
     _data->_obstacles_pub->publish(rmf_obstacles_msg);
   });
 
-  const std::string camera_pose_topic = "/" +  _data->_camera_name + "/pose";
   _data->_camera_pose_sub = this->create_subscription<tf2_msgs::msg::TFMessage>(
-  camera_pose_topic,
-  1,
+  _data->_camera_pose_topic,
+  rclcpp::SensorDataQoS(),
   [=](const tf2_msgs::msg::TFMessage::ConstSharedPtr &msg)
   {
     for (auto &transformStamped : msg->transforms)
@@ -62,6 +60,10 @@ void HumanDetector::make_detector()
     this->get_logger(),
     "Setting parameter camera_name to %s", _data->_camera_name.c_str()
   );
+  _data->_camera_image_topic = _data->_camera_name + "/image_rect";
+  _data->_camera_pose_topic  = _data->_camera_name + "/pose";
+  _data->_camera_info_topic  = _data->_camera_name + "/camera_info";
+  _data->_image_detections_topic  = _data->_camera_name + "/image_detections";
 
   _data->_camera_parent_name = this->declare_parameter("camera_parent_name", "sim_world");
   RCLCPP_INFO(
@@ -114,13 +116,13 @@ void HumanDetector::make_detector()
   // get one camera_info msg
   sensor_msgs::msg::CameraInfo camera_info;
   std::shared_ptr<rclcpp::Node> temp_node = std::make_shared<rclcpp::Node>("wait_for_msg_node");
-  const std::string camera_info_topic = "/" + _data->_camera_name + "/camera_info";
-  rclcpp::wait_for_message(camera_info, temp_node, camera_info_topic);
+  rclcpp::wait_for_message(camera_info, temp_node, _data->_camera_info_topic);
 
   // calculate camera fov
   float f_x = camera_info.p[0];
   float fov_x = 2 * atan2( camera_info.width, (2*f_x) );
 
+  // make detector
   std::shared_ptr<YoloDetector::Config> config = std::make_shared<YoloDetector::Config>(
     YoloDetector::Config{
       _data->_camera_name,

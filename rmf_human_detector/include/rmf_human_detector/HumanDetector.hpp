@@ -25,6 +25,10 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr _image_detections_pub;
     std::shared_ptr<YoloDetector> _detector;
     std::string _camera_name;
+    std::string _camera_image_topic;
+    std::string _camera_pose_topic;
+    std::string _camera_info_topic;
+    std::string _image_detections_topic;
     std::string _camera_parent_name;
   };
   std::shared_ptr<Data> _data;
