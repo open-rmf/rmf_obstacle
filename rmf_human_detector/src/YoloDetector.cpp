@@ -254,12 +254,12 @@ YoloDetector::Obstacles YoloDetector::post_process(const Mat &original_image, Ma
     }
 
     // generate rmf_obstacles
-    auto rmf_obstacles = to_rmf_obstacles(original_image, final_class_ids, final_confidences, final_boxes, final_centroids);
+    auto rmf_obstacles = to_rmf_obstacles(original_image, final_class_ids, final_centroids);
 
     return rmf_obstacles;
 }
 
-YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(const Mat &original_image, const vector<int> &final_class_ids, const vector<float> &final_confidences, const vector<Rect> &final_boxes, const vector<Point> &final_centroids)
+YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(const Mat &original_image, const vector<int> &final_class_ids, const vector<Point> &final_centroids)
 {
     auto rmf_obstacles = Obstacles();
 
