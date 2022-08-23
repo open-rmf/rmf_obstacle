@@ -9,12 +9,11 @@ Use cameras in gazebo to perform human detection using yolov5s model
 ## Setup
 
 To run the human detector, an object detection model is required and a labels file is required.
-A default labels file is provided. Follow the sets below to get the yolov5s object detection model.
+A default labels file is provided. Follow the steps below to get the yolov5s object detection model.
 
 ### To get YOLOv5s ONNX format:
 
-YOLOv5: Object detection models developed by [Ultralytics](https://github.com/ultralytics/yolov5)
-ONNX: Open Neural Network Exchange
+YOLOv5: Object detection models developed by [Ultralytics](https://github.com/ultralytics/yolov5).
 
 ```bash
 git clone https://github.com/ultralytics/yolov5
@@ -23,12 +22,12 @@ pip install -r requirements.txt
 python3 export.py --weights yolov5s.pt --include onnx
 ```
 This will generate yolov5s.pt and yolov5s.onnx.
-Configure human_detector_launch.py to point to the downloaded yolov5s.onnx model.
+Configure human_detector_launch.py to point to yolov5s.onnx model.
 
 ### To get coco.names file:
 
 coco.names is a file of all the possible classes/labels for an object.
-The labels can be found in [Ultralytics](https://github.com/ultralytics/yolov5/blob/master/data/coco.yaml)
+The labels can be found in [Ultralytics](https://github.com/ultralytics/yolov5/blob/master/data/coco.yaml).
 
 ## Run
 
