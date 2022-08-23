@@ -28,9 +28,11 @@ public:
         // Camera configurations
         std::string camera_name;
         const bool visualize = true;
-        const bool stationary = true;
+        const bool camera_static = true;
         const float camera_afov;
         // YoloDetector configurations
+        const std::string nn_filepath;
+        const std::string labels_filepath;
         const float score_threshold;
         const float nms_threshold;
         const float confidence_threshold;

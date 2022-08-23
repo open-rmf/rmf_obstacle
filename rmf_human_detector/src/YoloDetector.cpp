@@ -48,20 +48,19 @@ const Scalar RED = Scalar(0,0,255);
 YoloDetector::YoloDetector(std::shared_ptr<Config> config) : _config(config)
 {
     calibrate();
-    if (_config->visualize)
-    {
-        cv::namedWindow(_config->camera_name, cv::WINDOW_AUTOSIZE);
-    }
 
-    auto pwd = string(filesystem::current_path());
-    auto model_filepath = pwd + "/install/rmf_human_detector/share/rmf_human_detector/assets/yolov5s.onnx";
-    _net = readNet(model_filepath);
-    auto labels_filepath = pwd + "/install/rmf_human_detector/share/rmf_human_detector/assets/coco.names";
-    ifstream ifs(labels_filepath);
+    _net = readNet(_config->nn_filepath);
+
+    ifstream ifs(_config->labels_filepath);
     string line;
     while (getline(ifs, line))
     {
         _class_list.push_back(line);
+    }
+
+    if (_config->visualize)
+    {
+        cv::namedWindow(_config->camera_name, cv::WINDOW_AUTOSIZE);
     }
 }
 
@@ -99,7 +98,7 @@ void YoloDetector::camera_pose_cb(const geometry_msgs::msg::Transform &msg)
 {
     _camera_pose = msg;
 
-    if (_config->stationary)
+    if (_config->camera_static)
         return;
 
     // call calibrate() only if the camera is moving

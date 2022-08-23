@@ -30,7 +30,9 @@ def generate_launch_description():
            package='rmf_human_detector',
            executable='human_detector',
            parameters=[
-                {"camera_name": "camera1"}
+                {"camera_name": "camera1"},
+                {"nn_filepath": "/home/osrc/rmf_ws/src/rmf/rmf_obstacle_detectors/rmf_human_detector/assets/yolov5s.onnx"},
+                {"labels_filepath": "/home/osrc/rmf_ws/src/rmf/rmf_obstacle_detectors/rmf_human_detector/assets/coco.names"},
            ]
         ),
         Node(

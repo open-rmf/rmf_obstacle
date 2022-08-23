@@ -57,21 +57,59 @@ HumanDetector::HumanDetector() : Node("human_detector"), _data(std::make_shared<
 
 void HumanDetector::make_detector()
 {
-  // get ros2 params
-  _data->_camera_name = this->declare_parameter(
-    "camera_name", "camera1");
-  _data->_camera_parent_name = this->declare_parameter(
-    "camera_parent_name", "sim_world");
-  const bool visualize = this->declare_parameter(
-    "visualize", true);
-  const bool stationary = this->declare_parameter(
-    "static", true);
-  const float score_threshold = this->declare_parameter(
-    "score_threshold", 0.45);
-  const float nms_threshold = this->declare_parameter(
-    "nms_threshold", 0.45);
-  const float confidence_threshold = this->declare_parameter(
-    "confidence_threshold", 0.25);
+  _data->_camera_name = this->declare_parameter("camera_name", "camera1");
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter camera_name to %s", _data->_camera_name.c_str()
+  );
+
+  _data->_camera_parent_name = this->declare_parameter("camera_parent_name", "sim_world");
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter camera_parent_name to %s", _data->_camera_parent_name.c_str()
+  );
+
+  const bool visualize = this->declare_parameter("visualize", true);
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter visualize to %s", visualize ? "true" : "false"
+  );
+
+  const bool camera_static = this->declare_parameter("camera_static", true);
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter camera_static to %s", camera_static ? "true" : "false"
+  );
+
+  const std::string nn_filepath = this->declare_parameter("nn_filepath", "");
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter nn_filepath to %s", nn_filepath.c_str()
+  );
+
+  const std::string labels_filepath = this->declare_parameter("labels_filepath", "");
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter labels_filepath to %s", nn_filepath.c_str()
+  );
+
+  const float score_threshold = this->declare_parameter("score_threshold", 0.45);
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter score_threshold to %f", score_threshold
+  );
+
+  const float nms_threshold = this->declare_parameter("nms_threshold", 0.45);
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter nms_threshold to %f", nms_threshold
+  );
+
+  const float confidence_threshold = this->declare_parameter("confidence_threshold", 0.25);
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter confidence_threshold to %f", confidence_threshold
+  );
 
   // get one camera_info msg
   sensor_msgs::msg::CameraInfo camera_info;
@@ -87,8 +125,10 @@ void HumanDetector::make_detector()
     YoloDetector::Config{
       _data->_camera_name,
       visualize,
-      stationary,
+      camera_static,
       fov_x,
+      nn_filepath,
+      labels_filepath,
       score_threshold,
       nms_threshold,
       confidence_threshold,
