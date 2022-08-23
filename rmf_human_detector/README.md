@@ -31,6 +31,7 @@ The labels can be found in [Ultralytics](https://github.com/ultralytics/yolov5/b
 
 ## Run
 
-Use cameras in gazebo to perform human detection using yolov5s model
-
-> ros2 launch rmf_human_detector human_detector_launch.py
+Run this launch file from your `Open-RMF` workspace:
+```bash
+ros2 launch rmf_human_detector human_detector_launch.py
+```
