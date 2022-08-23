@@ -45,7 +45,7 @@ install(TARGETS human_detector
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY
-  launch models assets worlds
+  launch assets
   DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
