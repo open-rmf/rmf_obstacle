@@ -9,17 +9,16 @@ HumanDetector::HumanDetector()
 {
   make_detector();
 
+  _data->_obstacles_pub = this->create_publisher<Obstacles>(
+    "/rmf_obstacles",
+    rclcpp::SensorDataQoS()
+  );
+
   _data->_image_detections_pub =
     this->create_publisher<sensor_msgs::msg::Image>(
     _data->_image_detections_topic,
     rclcpp::QoS(10).reliable()
     );
-  _data->_detector->set_image_detections_pub(_data->_image_detections_pub);
-
-  _data->_obstacles_pub = this->create_publisher<Obstacles>(
-    "/rmf_obstacles",
-    rclcpp::SensorDataQoS()
-  );
 
   _data->_image_sub = this->create_subscription<sensor_msgs::msg::Image>(
     _data->_camera_image_topic,
@@ -27,16 +26,17 @@ HumanDetector::HumanDetector()
     [=](const sensor_msgs::msg::Image::ConstSharedPtr& msg)
     {
       // perform detections
-      auto rmf_obstacles_msg = _data->_detector->image_cb(msg);
+      auto [rmf_obstacles, image_detections] = _data->_detector->image_cb(msg);
 
       // populate fields like time stamp, etc
-      for (auto& obstacle : rmf_obstacles_msg.obstacles)
+      for (auto& obstacle : rmf_obstacles.obstacles)
       {
         obstacle.header.stamp = this->get_clock()->now();
       }
 
-      // publish rmf_obstacles_msg
-      _data->_obstacles_pub->publish(rmf_obstacles_msg);
+      // publish rmf_obstacles & image with bounding boxes
+      _data->_obstacles_pub->publish(rmf_obstacles);
+      _data->_image_detections_pub->publish(image_detections);
     });
 
   _data->_camera_pose_sub = this->create_subscription<tf2_msgs::msg::TFMessage>(

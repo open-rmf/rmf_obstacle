@@ -40,10 +40,11 @@ public:
 
   YoloDetector(std::shared_ptr<Config> config);
   ~YoloDetector();
-  Obstacles image_cb(const sensor_msgs::msg::Image::ConstSharedPtr& msg);
+
+  std::pair<Obstacles, sensor_msgs::msg::Image> image_cb(
+    const sensor_msgs::msg::Image::ConstSharedPtr& msg);
+
   void camera_pose_cb(const geometry_msgs::msg::Transform& msg);
-  void set_image_detections_pub(
-    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_detections_pub);
 
 private:
 
@@ -53,7 +54,6 @@ private:
   const float INPUT_HEIGHT = 640.0;
 
   // Members
-  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr _image_detections_pub;
   std::vector<std::string> _class_list;
   cv::dnn::Net _net;
   std::shared_ptr<Config> _config;
@@ -77,6 +77,8 @@ private:
   Obstacles to_rmf_obstacles(const cv::Mat& original_image,
     const std::vector<int>& final_class_ids,
     const std::vector<cv::Point>& final_centroids);
+
+  sensor_msgs::msg::Image to_ros_image(const cv::Mat& image);
 
   void drawing(const cv::Mat& original_image, cv::Mat& image,
     const std::vector<int>& final_class_ids,

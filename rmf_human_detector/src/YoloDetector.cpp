@@ -73,7 +73,8 @@ YoloDetector::~YoloDetector()
   }
 }
 
-YoloDetector::Obstacles YoloDetector::image_cb(
+std::pair<YoloDetector::Obstacles,
+  sensor_msgs::msg::Image> YoloDetector::image_cb(
   const sensor_msgs::msg::Image::ConstSharedPtr& msg)
 {
   // bridge from ROS image type to OpenCV image type
@@ -93,7 +94,10 @@ YoloDetector::Obstacles YoloDetector::image_cb(
   vector<Mat> detections = detect(image);
   Obstacles rmf_obstacles = post_process(original_image, image, detections);
 
-  return rmf_obstacles;
+  // convert OpenCV image with detections back to ROS image type
+  auto image_detections = to_ros_image(image);
+
+  return std::make_pair(rmf_obstacles, image_detections);
 }
 
 void YoloDetector::camera_pose_cb(const geometry_msgs::msg::Transform& msg)
@@ -105,12 +109,6 @@ void YoloDetector::camera_pose_cb(const geometry_msgs::msg::Transform& msg)
 
   // call calibrate() only if the camera is moving
   calibrate();
-}
-
-void YoloDetector::set_image_detections_pub(
-  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_detections_pub)
-{
-  _image_detections_pub = image_detections_pub;
 }
 
 void YoloDetector::calibrate()
@@ -264,6 +262,7 @@ YoloDetector::Obstacles YoloDetector::post_process(
     final_boxes,
     final_centroids
   );
+
   if (_config->visualize)
   {
     // OpenCV display
@@ -279,6 +278,17 @@ YoloDetector::Obstacles YoloDetector::post_process(
   );
 
   return rmf_obstacles;
+}
+
+sensor_msgs::msg::Image YoloDetector::to_ros_image(const cv::Mat& image)
+{
+  cv_bridge::CvImage img_bridge;
+  std_msgs::msg::Header header;
+  img_bridge =
+    cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, image);
+  sensor_msgs::msg::Image image_detections;
+  img_bridge.toImageMsg(image_detections);
+  return image_detections;
 }
 
 YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
@@ -453,15 +463,6 @@ void YoloDetector::drawing(
   // Draw image center
   circle(image, Point(original_image.cols/2, original_image.rows/2), 2,
     CV_RGB(255, 255, 0), -1);
-
-  // publish ROS Topic
-  cv_bridge::CvImage img_bridge;
-  std_msgs::msg::Header header;
-  img_bridge =
-    cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, image);
-  sensor_msgs::msg::Image image_msg;
-  img_bridge.toImageMsg(image_msg);
-  _image_detections_pub->publish(image_msg);
 }
 
 void YoloDetector::draw_label(Mat& input_image, string label, int left, int top)
