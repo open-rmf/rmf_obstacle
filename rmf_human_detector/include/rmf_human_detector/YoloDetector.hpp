@@ -30,6 +30,8 @@ public:
     const bool visualize = true;
     const bool camera_static = true;
     const float camera_afov;
+    std::string camera_level;
+    const int obstacle_lifetime_sec;
     // YoloDetector configurations
     const std::string nn_filepath;
     const std::string labels_filepath;

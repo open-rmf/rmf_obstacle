@@ -309,7 +309,7 @@ YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
     rmf_obstacle.header.frame_id = _config->camera_name;
     rmf_obstacle.id = i;
     rmf_obstacle.source = _config->camera_name;
-    rmf_obstacle.level_name = "L1";
+    rmf_obstacle.level_name = _config->camera_level;
     rmf_obstacle.classification = _class_list[final_class_ids[i]];
     rmf_obstacle.bbox.center.position.x = obstacle.x;
     rmf_obstacle.bbox.center.position.y = obstacle.y;
@@ -317,7 +317,7 @@ YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
     rmf_obstacle.bbox.size.x = 1.0;
     rmf_obstacle.bbox.size.y = 1.0;
     rmf_obstacle.bbox.size.z = 2.0;
-    rmf_obstacle.lifetime.sec = 10;
+    rmf_obstacle.lifetime.sec = _config->obstacle_lifetime_sec;
 
     cam_coord_to_world_coord(rmf_obstacle);
     rmf_obstacles.obstacles.push_back(rmf_obstacle);

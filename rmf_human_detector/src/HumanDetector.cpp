@@ -87,6 +87,20 @@ void HumanDetector::make_detector()
     "Setting parameter camera_static to %s", camera_static ? "true" : "false"
   );
 
+  const std::string camera_level =
+    this->declare_parameter("camera_level", "L1");
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter camera_level to %s", camera_level.c_str()
+  );
+
+  const int obstacle_lifetime_sec =
+    this->declare_parameter("obstacle_lifetime_sec", 1);
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter obstacle_lifetime_sec to %d", obstacle_lifetime_sec
+  );
+
   const std::string nn_filepath = this->declare_parameter("nn_filepath", "");
   RCLCPP_INFO(
     this->get_logger(),
@@ -138,6 +152,8 @@ void HumanDetector::make_detector()
       visualize,
       camera_static,
       fov_x,
+      camera_level,
+      obstacle_lifetime_sec,
       nn_filepath,
       labels_filepath,
       score_threshold,
