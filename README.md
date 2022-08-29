@@ -1,8 +1,12 @@
 # rmf_obstacle_detectors
+![](https://github.com/open-rmf/rmf_obstacle_detectors/workflows/build/badge.svg)
+![](https://github.com/open-rmf/rmf_obstacle_detectors/workflows/style/badge.svg)
+
 Packages that infer the presence of obstacles from sensor inputs.
-* [rmf_obstacle_detector_laserscan](#rmfobstacledetectorlaserscan)
-* [rmf_human_detector_oakd](#rmfhumandetectoroakd)
-* [rmf_human_detector](#rmfhumandetector)
+  - [rmf_obstacle_detectors](#rmf_obstacle_detectors)
+  - [rmf_obstacle_detector_laserscan](#rmf_obstacle_detector_laserscan)
+  - [rmf_human_detector_oakd](#rmf_human_detector_oakd)
+  - [rmf_human_detector](#rmf_human_detector)
 
 ## rmf_obstacle_detector_laserscan
 ![](../media/rmf_obstacle_detector_laserscan.gif)
