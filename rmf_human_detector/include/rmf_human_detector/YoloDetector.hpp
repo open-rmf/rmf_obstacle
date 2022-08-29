@@ -35,6 +35,7 @@ public:
     // YoloDetector configurations
     const std::string nn_filepath;
     const std::string labels_filepath;
+    const bool use_gpu = false;
     const float score_threshold;
     const float nms_threshold;
     const float confidence_threshold;

@@ -51,6 +51,11 @@ YoloDetector::YoloDetector(std::shared_ptr<Config> config)
   calibrate();
 
   _net = readNet(_config->nn_filepath);
+  if (_config->use_gpu)
+  {
+    _net.setPreferableBackend(DNN_BACKEND_CUDA);
+    _net.setPreferableTarget(DNN_TARGET_CUDA);
+  }
 
   ifstream ifs(_config->labels_filepath);
   string line;

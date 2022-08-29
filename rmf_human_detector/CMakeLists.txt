@@ -19,6 +19,19 @@ find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(rmf_obstacle_msgs REQUIRED)
 
+if(${OpenCV_VERSION} GREATER 4.0)
+  add_definitions(-D_CV4)
+else()
+  add_definitions(-D_CV3)
+endif()
+
+if(OpenCV_CUDA_VERSION)
+  message (STATUS "OpenCV was compiled with GPU support, use GPU")
+  add_definitions(-D_USE_GPU)
+else()
+  message (STATUS "OpenCV was not compiled with GPU support")
+endif()
+
 #=============================================================
 
 add_executable(human_detector src/HumanDetector.cpp src/YoloDetector.cpp)

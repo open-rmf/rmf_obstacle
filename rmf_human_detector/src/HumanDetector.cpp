@@ -114,6 +114,12 @@ void HumanDetector::make_detector()
     "Setting parameter labels_filepath to %s", nn_filepath.c_str()
   );
 
+  const bool use_gpu = this->declare_parameter("use_gpu", false);
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter use_gpu to %s", use_gpu ? "true" : "false"
+  );
+
   const float score_threshold =
     this->declare_parameter("score_threshold", 0.45);
   RCLCPP_INFO(
@@ -156,6 +162,7 @@ void HumanDetector::make_detector()
       obstacle_lifetime_sec,
       nn_filepath,
       labels_filepath,
+      use_gpu,
       score_threshold,
       nms_threshold,
       confidence_threshold,
