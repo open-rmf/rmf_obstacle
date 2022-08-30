@@ -11,6 +11,7 @@ include(GNUInstallDirs)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(image_geometry REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_msgs REQUIRED)
@@ -45,6 +46,7 @@ ament_target_dependencies(
   human_detector
   rclcpp
   sensor_msgs
+  image_geometry
   tf2
   tf2_ros
   tf2_msgs
