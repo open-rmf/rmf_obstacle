@@ -2,7 +2,6 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <sensor_msgs/msg/camera_info.hpp>
-#include <image_geometry/pinhole_camera_model.h>
 #include <rmf_human_detector/HumanDetector.hpp>
 
 HumanDetector::HumanDetector()
@@ -147,20 +146,14 @@ void HumanDetector::make_detector()
     std::make_shared<rclcpp::Node>("wait_for_msg_node");
   rclcpp::wait_for_message(camera_info, temp_node, _data->_camera_info_topic);
 
-  // calculate camera fov
-  image_geometry::PinholeCameraModel model;
-  model.fromCameraInfo(camera_info);
-  float f_x = model.fx();
-  float fov_x = 2 * atan2(camera_info.width, (2*f_x) );
-
   // make detector
   std::shared_ptr<YoloDetector::Config> config =
     std::make_shared<YoloDetector::Config>(
     YoloDetector::Config{
       _data->_camera_name,
+      camera_info,
       visualize,
       camera_static,
-      fov_x,
       camera_level,
       obstacle_lifetime_sec,
       nn_filepath,

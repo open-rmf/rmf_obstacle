@@ -16,6 +16,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/vector3_stamped.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
+#include <image_geometry/pinhole_camera_model.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2_ros/buffer.h>
@@ -128,6 +129,12 @@ void YoloDetector::calibrate()
   double roll, pitch, yaw;
   m.getRPY(roll, pitch, yaw);
 
+  // calculate camera fov
+  image_geometry::PinholeCameraModel model;
+  model.fromCameraInfo(_config->camera_info);
+  float fx = model.fx();
+  float fov_x = 2 * atan2(_config->camera_info.width, (2*fx) );
+
   // Suppose an unobstructed standing person model is placed exactly in the middle
   // of the camera image, such that the person's midpoint and image midpoint coincide.
   // _d_param = real world distance (metres) along the floor from camera to person
@@ -148,7 +155,7 @@ void YoloDetector::calibrate()
 
   // _w_param =
   // width of real world (metres) within the image, at the location of the person
-  _w_param = CAMERA_TO_HUMAN*tan(_config->camera_afov/2);
+  _w_param = CAMERA_TO_HUMAN*tan(fov_x/2);
 
 }
 
