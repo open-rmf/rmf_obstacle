@@ -274,8 +274,7 @@ YoloDetector::Obstacles YoloDetector::post_process(
     image,
     final_class_ids,
     final_confidences,
-    final_boxes,
-    final_centroids
+    final_boxes
   );
 
   if (_config->visualize)
@@ -287,7 +286,6 @@ YoloDetector::Obstacles YoloDetector::post_process(
 
   // generate rmf_obstacles
   auto rmf_obstacles = to_rmf_obstacles(
-    original_image,
     final_class_ids,
     final_boxes,
     final_centroids
@@ -328,7 +326,6 @@ Plane YoloDetector::get_ground_plane()
 
   // do transformation
   tf2::doTransform(in, out, camera_inv_tf_stamped);
-  geometry_msgs::msg::Vector3 temp = out.vector;
 
   // transform point in plane from world coordinates to camera coordinates
   geometry_msgs::msg::PointStamped in2, out2;
@@ -339,7 +336,6 @@ Plane YoloDetector::get_ground_plane()
 
   // do transformation
   tf2::doTransform(in2, out2, camera_inv_tf_stamped);
-  geometry_msgs::msg::Point temp2 = out2.point;
 
   Eigen::Vector3f plane_normal(out.vector.x, out.vector.y, out.vector.z);
   Eigen::Vector3f point_in_plane(out2.point.x, out2.point.y, out2.point.z);
@@ -347,7 +343,6 @@ Plane YoloDetector::get_ground_plane()
 }
 
 YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
-  const Mat& original_image,
   const vector<int>& final_class_ids,
   const vector<Rect>& final_boxes,
   const vector<Point>& final_centroids)
@@ -420,8 +415,7 @@ void YoloDetector::drawing(
   Mat& image,
   const vector<int>& final_class_ids,
   const vector<float>& final_confidences,
-  const vector<Rect>& final_boxes,
-  const vector<Point>& final_centroids)
+  const vector<Rect>& final_boxes)
 {
   for (size_t i = 0; i < final_class_ids.size(); i++)
   {

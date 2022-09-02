@@ -89,7 +89,7 @@ private:
   Obstacles post_process(const cv::Mat& original_image, cv::Mat& image,
     std::vector<cv::Mat>& detections);
 
-  Obstacles to_rmf_obstacles(const cv::Mat& original_image,
+  Obstacles to_rmf_obstacles(
     const std::vector<int>& final_class_ids,
     const std::vector<cv::Rect>& final_boxes,
     const std::vector<cv::Point>& final_centroids);
@@ -101,8 +101,7 @@ private:
   void drawing(const cv::Mat& original_image, cv::Mat& image,
     const std::vector<int>& final_class_ids,
     const std::vector<float>& final_confidences,
-    const std::vector<cv::Rect>& final_boxes,
-    const std::vector<cv::Point>& final_centroids);
+    const std::vector<cv::Rect>& final_boxes);
 
   void draw_label(cv::Mat& input_image, std::string label, int left, int top);
 
