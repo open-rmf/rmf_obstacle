@@ -89,21 +89,12 @@ private:
   Obstacles post_process(const cv::Mat& original_image, cv::Mat& image,
     std::vector<cv::Mat>& detections);
 
-  cv::Point3d img_coord_to_cam_coord(const cv::Point& centroid,
-    const cv::Mat& original_image);
-
-  void cam_coord_to_world_coord(Obstacle& obstacle);
-
   Obstacles to_rmf_obstacles(const cv::Mat& original_image,
-    const std::vector<int>& final_class_ids,
-    const std::vector<cv::Point>& final_centroids);
-
-  Plane get_ground_plane();
-
-  Obstacles to_rmf_obstacles2(const cv::Mat& original_image,
     const std::vector<int>& final_class_ids,
     const std::vector<cv::Rect>& final_boxes,
     const std::vector<cv::Point>& final_centroids);
+
+  Plane get_ground_plane();
 
   sensor_msgs::msg::Image to_ros_image(const cv::Mat& image);
 
