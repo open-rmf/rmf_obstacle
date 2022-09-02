@@ -436,8 +436,6 @@ void YoloDetector::drawing(
     Point brc = Point(left + width, top + height);
     // Draw bounding box
     rectangle(image, tlc, brc, BLUE, RECT_THICKNESS);
-    // Draw centroid
-    circle(image, final_centroids[i], 2, CV_RGB(255, 0, 0), -1);
 
     // Get the label for the class name and its confidence
     string label = format("%.2f", final_confidences[i]);
@@ -456,10 +454,6 @@ void YoloDetector::drawing(
 
   // Slicing to crop the image
   image = image(Range(0, original_image.rows), Range(0, original_image.cols));
-
-  // Draw image center
-  circle(image, Point(original_image.cols/2, original_image.rows/2), 2,
-    CV_RGB(255, 255, 0), -1);
 }
 
 void YoloDetector::draw_label(Mat& input_image, string label, int left, int top)
