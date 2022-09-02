@@ -11,12 +11,15 @@
 #include <builtin_interfaces/msg/duration.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
+#include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
+#include <geometry_msgs/msg/point_stamped.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/vector3_stamped.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <image_geometry/pinhole_camera_model.h>
+#include <tf2/convert.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2_ros/buffer.h>
@@ -289,7 +292,14 @@ YoloDetector::Obstacles YoloDetector::post_process(
     final_centroids
   );
 
-  return rmf_obstacles;
+  auto rmf_obstacles2 = to_rmf_obstacles2(
+    original_image,
+    final_class_ids,
+    final_boxes,
+    final_centroids
+  );
+
+  return rmf_obstacles2;
 }
 
 sensor_msgs::msg::Image YoloDetector::to_ros_image(const cv::Mat& image)
@@ -301,6 +311,114 @@ sensor_msgs::msg::Image YoloDetector::to_ros_image(const cv::Mat& image)
   sensor_msgs::msg::Image image_detections;
   img_bridge.toImageMsg(image_detections);
   return image_detections;
+}
+
+Plane YoloDetector::get_ground_plane()
+{
+  // get inverse of camera_tf
+  tf2::Transform camera_tf, camera_inv_tf;
+  tf2::fromMsg(_camera_pose, camera_tf);
+  camera_inv_tf = camera_tf.inverse();
+  geometry_msgs::msg::Transform camera_inv_tf_msg;
+  camera_inv_tf_msg = tf2::toMsg(camera_inv_tf);
+
+
+  // transform plane normal from world coordinates to camera coordinates
+  geometry_msgs::msg::TransformStamped camera_inv_tf_stamped;
+  camera_inv_tf_stamped.transform = camera_inv_tf_msg;
+  geometry_msgs::msg::Vector3Stamped in, out;
+  in.vector = geometry_msgs::build<geometry_msgs::msg::Vector3>()
+    .x(0)
+    .y(0)
+    .z(1);
+
+  // do transformation
+  tf2::doTransform(in, out, camera_inv_tf_stamped);
+  geometry_msgs::msg::Vector3 temp = out.vector;
+
+  // transform point in plane from world coordinates to camera coordinates
+  geometry_msgs::msg::PointStamped in2, out2;
+  in2.point = geometry_msgs::build<geometry_msgs::msg::Point>()
+    .x(0)
+    .y(0)
+    .z(0);
+
+  // do transformation
+  tf2::doTransform(in2, out2, camera_inv_tf_stamped);
+  geometry_msgs::msg::Point temp2 = out2.point;
+
+  Eigen::Vector3f plane_normal(out.vector.x, out.vector.y, out.vector.z);
+  Eigen::Vector3f point_in_plane(out2.point.x, out2.point.y, out2.point.z);
+  return Plane(plane_normal, point_in_plane);
+}
+
+YoloDetector::Obstacles YoloDetector::to_rmf_obstacles2(
+  const Mat& original_image,
+  const vector<int>& final_class_ids,
+  const vector<Rect>& final_boxes,
+  const vector<Point>& final_centroids)
+{
+  auto rmf_obstacles = Obstacles();
+  rmf_obstacles.obstacles.reserve(final_centroids.size());
+
+  image_geometry::PinholeCameraModel model;
+  model.fromCameraInfo(_config->camera_info);
+
+  // prepare obstacle_msg objects and add to rmf_obstacles
+  for (size_t i = 0; i < final_boxes.size(); i++)
+  {
+    // construct 3d ray from camera to middle of the bottom edge of bounding box
+    Rect box = final_boxes[i];
+    int height = box.height;
+    Point point_on_ground = Point(final_centroids[i].x, final_centroids[i].y + (height/2));
+    cv::Point3d ray = model.projectPixelTo3dRay(point_on_ground);
+
+    // change from image coordinates to camera coordinates
+    cv::Point3d temp = ray;
+    ray.x = temp.z;
+    ray.y = -temp.x;
+    ray.z = -temp.y;
+
+    // construct ground plane in camera coordinates
+    Plane plane = get_ground_plane();
+
+    // obstacle is at the intersection point of ray and plane
+    Eigen::Vector3f n = plane.getNormal();
+    Eigen::Vector3f d(ray.x, ray.y, ray.z);
+    double alpha = - plane.getD() / n.dot(d);
+    Eigen::Vector3f intersection(alpha * d);
+
+    // convert intersection from camera coordinates to world coordinates
+    geometry_msgs::msg::TransformStamped camera_tf_stamped;
+    camera_tf_stamped.transform = _camera_pose;
+    geometry_msgs::msg::PointStamped in2, out2;
+    in2.point = geometry_msgs::build<geometry_msgs::msg::Point>()
+      .x(intersection.x())
+      .y(intersection.y())
+      .z(intersection.z());
+
+    // do transformation
+    tf2::doTransform(in2, out2, camera_tf_stamped);
+    Point3d obstacle(out2.point.x, out2.point.y, out2.point.z);
+
+    // populate rmf_obstacle
+    auto rmf_obstacle = Obstacle();
+    rmf_obstacle.header.frame_id = _config->camera_name;
+    rmf_obstacle.id = i;
+    rmf_obstacle.source = _config->camera_name;
+    rmf_obstacle.level_name = _config->camera_level;
+    rmf_obstacle.classification = _class_list[final_class_ids[i]];
+    rmf_obstacle.bbox.center.position.x = obstacle.x;
+    rmf_obstacle.bbox.center.position.y = obstacle.y;
+    rmf_obstacle.bbox.center.position.z = obstacle.z;
+    rmf_obstacle.bbox.size.x = 1.0;
+    rmf_obstacle.bbox.size.y = 1.0;
+    rmf_obstacle.bbox.size.z = 2.0;
+    rmf_obstacle.lifetime.sec = _config->obstacle_lifetime_sec;
+
+    rmf_obstacles.obstacles.push_back(rmf_obstacle);
+  }
+  return rmf_obstacles;
 }
 
 YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(

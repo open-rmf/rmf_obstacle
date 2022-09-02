@@ -2,6 +2,7 @@
 #define YOLODETECTOR_HPP
 
 #include <string>
+#include <Eigen/Geometry>
 
 // ROS includes
 #include <rclcpp/rclcpp.hpp>
@@ -16,6 +17,21 @@
 // Project includes
 #include <rmf_obstacle_msgs/msg/obstacle.hpp>
 #include <rmf_obstacle_msgs/msg/obstacles.hpp>
+
+class Plane
+{
+public:
+  Plane(Eigen::Vector3f normal, Eigen::Vector3f p) :
+    _normal(normal.normalized()), _d(- normal.dot(p) / normal.norm()) {}
+
+  Eigen::Vector3f getNormal() { return _normal; }
+
+  double getD() { return _d; }
+
+private:
+  Eigen::Vector3f _normal;
+  double _d;
+};
 
 class YoloDetector
 {
@@ -80,6 +96,13 @@ private:
 
   Obstacles to_rmf_obstacles(const cv::Mat& original_image,
     const std::vector<int>& final_class_ids,
+    const std::vector<cv::Point>& final_centroids);
+
+  Plane get_ground_plane();
+
+  Obstacles to_rmf_obstacles2(const cv::Mat& original_image,
+    const std::vector<int>& final_class_ids,
+    const std::vector<cv::Rect>& final_boxes,
     const std::vector<cv::Point>& final_centroids);
 
   sensor_msgs::msg::Image to_ros_image(const cv::Mat& image);
