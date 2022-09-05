@@ -21,8 +21,8 @@
 class Plane
 {
 public:
-  Plane(Eigen::Vector3f normal, Eigen::Vector3f p) :
-    _normal(normal.normalized()), _d(- normal.dot(p) / normal.norm()) {}
+  Plane(Eigen::Vector3f normal, Eigen::Vector3f p)
+  : _normal(normal.normalized()), _d(- normal.dot(p) / normal.norm()) {}
 
   Eigen::Vector3f getNormal() { return _normal; }
 
@@ -46,7 +46,6 @@ public:
     std::string camera_name;
     sensor_msgs::msg::CameraInfo camera_info;
     const bool visualize = true;
-    const bool camera_static = true;
     std::string camera_level;
     const int obstacle_lifetime_sec;
     // YoloDetector configurations
@@ -77,8 +76,6 @@ private:
   std::vector<std::string> _class_list;
   cv::dnn::Net _net;
   std::shared_ptr<Config> _config;
-  float _d_param;
-  float _w_param;
   geometry_msgs::msg::Transform _camera_pose;
 
   // Methods
@@ -91,8 +88,7 @@ private:
 
   Obstacles to_rmf_obstacles(
     const std::vector<int>& final_class_ids,
-    const std::vector<cv::Rect>& final_boxes,
-    const std::vector<cv::Point>& final_centroids);
+    const std::vector<cv::Rect>& final_boxes);
 
   Plane get_ground_plane();
 
@@ -104,8 +100,6 @@ private:
     const std::vector<cv::Rect>& final_boxes);
 
   void draw_label(cv::Mat& input_image, std::string label, int left, int top);
-
-  void calibrate();
 
 };
 

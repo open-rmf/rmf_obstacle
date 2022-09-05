@@ -52,8 +52,6 @@ const Scalar RED = Scalar(0, 0, 255);
 YoloDetector::YoloDetector(std::shared_ptr<Config> config)
 : _config(config)
 {
-  calibrate();
-
   _net = readNet(_config->nn_filepath);
   if (_config->use_gpu)
   {
@@ -112,54 +110,6 @@ std::pair<YoloDetector::Obstacles,
 void YoloDetector::camera_pose_cb(const geometry_msgs::msg::Transform& msg)
 {
   _camera_pose = msg;
-
-  if (_config->camera_static)
-    return;
-
-  // call calibrate() only if the camera is moving
-  calibrate();
-}
-
-void YoloDetector::calibrate()
-{
-  // calculate camera pitch
-  tf2::Quaternion q(
-    _camera_pose.rotation.x,
-    _camera_pose.rotation.y,
-    _camera_pose.rotation.z,
-    _camera_pose.rotation.w);
-  tf2::Matrix3x3 m(q);
-  double roll, pitch, yaw;
-  m.getRPY(roll, pitch, yaw);
-
-  // calculate camera fov
-  image_geometry::PinholeCameraModel model;
-  model.fromCameraInfo(_config->camera_info);
-  float fx = model.fx();
-  float fov_x = 2 * atan2(_config->camera_info.width, (2*fx) );
-
-  // Suppose an unobstructed standing person model is placed exactly in the middle
-  // of the camera image, such that the person's midpoint and image midpoint coincide.
-  // _d_param = real world distance (metres) along the floor from camera to person
-  if (std::abs(pitch) < 0.001)
-  {
-    // TO DO: handle when the camera pitch is zero
-    _d_param = 5.28;
-  }
-  else
-  {
-    const float STANDING_PERSON_HEIGHT = 1.8;
-    _d_param = (_camera_pose.translation.z - STANDING_PERSON_HEIGHT/2)/
-      tan(pitch);
-  }
-
-  // CAMERA_TO_HUMAN = real world direct distance from camera to person's midpoint
-  const float CAMERA_TO_HUMAN = _d_param/cos(pitch);
-
-  // _w_param =
-  // width of real world (metres) within the image, at the location of the person
-  _w_param = CAMERA_TO_HUMAN*tan(fov_x/2);
-
 }
 
 Mat YoloDetector::format_yolov5(const Mat& source)
@@ -199,7 +149,6 @@ YoloDetector::Obstacles YoloDetector::post_process(
   vector<int> class_ids;
   vector<float> confidences;
   vector<Rect> boxes;
-  vector<Point> centroids; // image coordinates, (int, int)
   // Resizing factor
   float x_factor = image.cols / INPUT_WIDTH;
   float y_factor = image.rows / INPUT_HEIGHT;
@@ -245,7 +194,6 @@ YoloDetector::Obstacles YoloDetector::post_process(
         int height = int(h * y_factor);
         // Store good detections in the boxes vector
         boxes.push_back(Rect(left, top, width, height));
-        centroids.push_back(Point(px * x_factor, py * y_factor));
       }
     }
   }
@@ -259,13 +207,11 @@ YoloDetector::Obstacles YoloDetector::post_process(
   vector<int> final_class_ids;
   vector<float> final_confidences;
   vector<Rect> final_boxes;
-  vector<Point> final_centroids;
   for (auto i : indices)
   {
     final_class_ids.push_back(class_ids[i]);
     final_confidences.push_back(confidences[i]);
     final_boxes.push_back(boxes[i]);
-    final_centroids.push_back(centroids[i]);
   }
 
   // draw to image
@@ -287,8 +233,7 @@ YoloDetector::Obstacles YoloDetector::post_process(
   // generate rmf_obstacles
   auto rmf_obstacles = to_rmf_obstacles(
     final_class_ids,
-    final_boxes,
-    final_centroids
+    final_boxes
   );
 
   return rmf_obstacles;
@@ -315,7 +260,7 @@ Plane YoloDetector::get_ground_plane()
   camera_inv_tf_msg = tf2::toMsg(camera_inv_tf);
 
 
-  // transform plane normal from world coordinates to camera coordinates
+  // transform plane normal vector (0,0,1) from world coordinates to camera coordinates
   geometry_msgs::msg::TransformStamped camera_inv_tf_stamped;
   camera_inv_tf_stamped.transform = camera_inv_tf_msg;
   geometry_msgs::msg::Vector3Stamped in, out;
@@ -327,7 +272,7 @@ Plane YoloDetector::get_ground_plane()
   // do transformation
   tf2::doTransform(in, out, camera_inv_tf_stamped);
 
-  // transform point in plane from world coordinates to camera coordinates
+  // transform point in plane (0,0,0) from world coordinates to camera coordinates
   geometry_msgs::msg::PointStamped in2, out2;
   in2.point = geometry_msgs::build<geometry_msgs::msg::Point>()
     .x(0)
@@ -344,11 +289,10 @@ Plane YoloDetector::get_ground_plane()
 
 YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
   const vector<int>& final_class_ids,
-  const vector<Rect>& final_boxes,
-  const vector<Point>& final_centroids)
+  const vector<Rect>& final_boxes)
 {
   auto rmf_obstacles = Obstacles();
-  rmf_obstacles.obstacles.reserve(final_centroids.size());
+  rmf_obstacles.obstacles.reserve(final_boxes.size());
 
   image_geometry::PinholeCameraModel model;
   model.fromCameraInfo(_config->camera_info);
@@ -358,8 +302,11 @@ YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
   {
     // construct 3d ray from camera to middle of the bottom edge of bounding box
     Rect box = final_boxes[i];
+    int left = box.x;
+    int top = box.y;
+    int width = box.width;
     int height = box.height;
-    Point point_on_ground = Point(final_centroids[i].x, final_centroids[i].y + (height/2));
+    Point point_on_ground = Point(left + (width/2), top + height);
     cv::Point3d ray = model.projectPixelTo3dRay(point_on_ground);
 
     // change from image coordinates to camera coordinates
@@ -380,15 +327,15 @@ YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
     // convert intersection from camera coordinates to world coordinates
     geometry_msgs::msg::TransformStamped camera_tf_stamped;
     camera_tf_stamped.transform = _camera_pose;
-    geometry_msgs::msg::PointStamped in2, out2;
-    in2.point = geometry_msgs::build<geometry_msgs::msg::Point>()
+    geometry_msgs::msg::PointStamped in, out;
+    in.point = geometry_msgs::build<geometry_msgs::msg::Point>()
       .x(intersection.x())
       .y(intersection.y())
       .z(intersection.z());
 
     // do transformation
-    tf2::doTransform(in2, out2, camera_tf_stamped);
-    Point3d obstacle(out2.point.x, out2.point.y, out2.point.z);
+    tf2::doTransform(in, out, camera_tf_stamped);
+    Point3d obstacle(out.point.x, out.point.y, out.point.z);
 
     // populate rmf_obstacle
     auto rmf_obstacle = Obstacle();

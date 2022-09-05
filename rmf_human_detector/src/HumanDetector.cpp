@@ -81,12 +81,6 @@ void HumanDetector::make_detector()
     "Setting parameter visualize to %s", visualize ? "true" : "false"
   );
 
-  const bool camera_static = this->declare_parameter("camera_static", true);
-  RCLCPP_INFO(
-    this->get_logger(),
-    "Setting parameter camera_static to %s", camera_static ? "true" : "false"
-  );
-
   const std::string camera_level =
     this->declare_parameter("camera_level", "L1");
   RCLCPP_INFO(
@@ -153,7 +147,6 @@ void HumanDetector::make_detector()
       _data->_camera_name,
       camera_info,
       visualize,
-      camera_static,
       camera_level,
       obstacle_lifetime_sec,
       nn_filepath,
