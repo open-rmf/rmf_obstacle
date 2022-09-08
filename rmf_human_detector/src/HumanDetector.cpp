@@ -156,6 +156,13 @@ void HumanDetector::make_detector()
     "Setting parameter use_gpu to %s", use_gpu ? "true" : "false"
   );
 
+  const float confidence_threshold =
+    this->declare_parameter("confidence_threshold", 0.25);
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter confidence_threshold to %f", confidence_threshold
+  );
+
   const float score_threshold =
     this->declare_parameter("score_threshold", 0.45);
   RCLCPP_INFO(
@@ -167,13 +174,6 @@ void HumanDetector::make_detector()
   RCLCPP_INFO(
     this->get_logger(),
     "Setting parameter nms_threshold to %f", nms_threshold
-  );
-
-  const float confidence_threshold =
-    this->declare_parameter("confidence_threshold", 0.25);
-  RCLCPP_INFO(
-    this->get_logger(),
-    "Setting parameter confidence_threshold to %f", confidence_threshold
   );
 
   // get one camera_info msg
@@ -194,9 +194,9 @@ void HumanDetector::make_detector()
       nn_filepath,
       labels_filepath,
       use_gpu,
+      confidence_threshold,
       score_threshold,
       nms_threshold,
-      confidence_threshold,
     }
     );
 
