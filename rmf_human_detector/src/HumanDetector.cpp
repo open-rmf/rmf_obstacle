@@ -1,6 +1,5 @@
+#include <filesystem>
 #include <rclcpp/wait_for_message.hpp>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Matrix3x3.h>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <rmf_human_detector/HumanDetector.hpp>
 
@@ -122,12 +121,34 @@ void HumanDetector::make_detector()
     "Setting parameter nn_filepath to %s", nn_filepath.c_str()
   );
 
+  std::filesystem::path model_file(nn_filepath);
+  if (!std::filesystem::exists(model_file))
+  {
+    RCLCPP_INFO(
+      this->get_logger(),
+      "Model file %s does not exist, follow README instructions to get the file",
+      model_file.c_str()
+    );
+    return;
+  }
+
   const std::string labels_filepath =
     this->declare_parameter("labels_filepath", "");
   RCLCPP_INFO(
     this->get_logger(),
-    "Setting parameter labels_filepath to %s", nn_filepath.c_str()
+    "Setting parameter labels_filepath to %s", labels_filepath.c_str()
   );
+
+  std::filesystem::path labels_file(labels_filepath);
+  if (!std::filesystem::exists(labels_file))
+  {
+    RCLCPP_INFO(
+      this->get_logger(),
+      "Labels file %s does not exist, follow README instructions to get the file",
+      labels_file.c_str()
+    );
+    return;
+  }
 
   const bool use_gpu = this->declare_parameter("use_gpu", false);
   RCLCPP_INFO(

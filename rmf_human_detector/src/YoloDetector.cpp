@@ -1,35 +1,20 @@
 #include <memory>
 #include <cstdio>
 #include <fstream>
-#include <cmath>
-#include <filesystem>
-#include <memory>
 
 // ROS includes
-#include <std_msgs/msg/header.hpp>
-#include <builtin_interfaces/msg/time.hpp>
-#include <builtin_interfaces/msg/duration.hpp>
 #include <geometry_msgs/msg/point.hpp>
-#include <geometry_msgs/msg/quaternion.hpp>
-#include <geometry_msgs/msg/point.hpp>
-#include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
-#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/vector3_stamped.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <image_geometry/pinhole_camera_model.h>
-#include <tf2/convert.h>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Matrix3x3.h>
-#include <tf2_ros/buffer.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 // OpenCV includes
 #include <cv_bridge/cv_bridge.h>
 
 // Project includes
-#include <rmf_obstacle_msgs/msg/bounding_box3_d.hpp>
 #include <rmf_human_detector/YoloDetector.hpp>
 
 // Namespaces
