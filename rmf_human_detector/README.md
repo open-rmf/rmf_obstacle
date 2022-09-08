@@ -119,3 +119,40 @@ ros2 launch rmf_human_detector human_detector_launch.py
 | confidence_threshold  | 0.25          | Minimum confidence score for the model's prediction to be considered |
 | score_threshold       | 0.45          | Minimum label score for the model's prediction to be considered |
 | nms_threshold         | 0.45          | Non Maximal Suppression maximum IoU (intersection over union) for the model's prediction to be considered |
+
+## Implementation Details
+
+### Camera
+
+The camera `model.sdf` has been added to `rmf_demos_assets` within the rmf_demos repo. It includes a sensor plugin that publishes camera images and camera info as ignition topics, and a pose publisher plugin that publishes camera pose as an ignition topic.
+
+> Ideally, a user will be able to configure all the attributes of the camera through the `rmf_sandbox` GUI and then `rmf_sandbox` generates the camera's `model.sdf` and adds it in the world file. When this is ready, the camera model in `rmf_demos_assets` becomes obselete.
+
+> Currently, traffic editor does not support model pitch. Thus the camera cannot be spawned in `rmf_demos` with a pitch. However, manually setting the camera pitch from gazebo is possible, and the human position estimation still works.
+
+A ROS-ignition `parameter_bridge` node is used to bridge the camera image, camera info and camera pose from ignition topics to ROS topics.
+
+An `image_proc` node is used to convert the raw camera image to a rectified image.
+
+### Human position estimation
+
+1. Load `YOLOv5s` model
+2. Use OpenCV's DNN module to perform inference on image
+3. Post process model output to get human bounding boxes
+4. Project a ray to the middle of the bottom edge of bounding boxes
+5. Get ground plane based on level elevation
+6. Perform ray and ground plane intersection to estimate human position
+7. Publish human position as `rmf_obstacles`
+8. Publish image with bounding boxes around humans
+
+Assumptions:
+* The camera and camera info follow a pinhole camera model.
+* The ray plane intersection method assumes the ground plane is flat.
+* The ray plane intersection method assumes that the intersection point where the human touches the ground, is within the bounding box and not obstructed.
+
+### Launch file contents
+
+* ROS-ignition parameter bridge node
+* Image rectification node
+* Static pose publisher node
+* `rmf_human_detector` node
