@@ -65,6 +65,8 @@ public:
 
   void camera_pose_cb(const geometry_msgs::msg::Transform& msg);
 
+  void add_level(const std::string level_name, const double level_elevation);
+
 private:
 
   // Yolov5s Constants
@@ -77,6 +79,7 @@ private:
   cv::dnn::Net _net;
   std::shared_ptr<Config> _config;
   geometry_msgs::msg::Transform _camera_pose;
+  std::unordered_map<std::string, double> _level_to_elevation;
 
   // Methods
   cv::Mat format_yolov5(const cv::Mat& source);

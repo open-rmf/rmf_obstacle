@@ -19,6 +19,7 @@
   <depend>cv_bridge</depend>
   <depend>OpenCV</depend>
   <depend>rmf_obstacle_msgs</depend>
+  <depend>rmf_building_map_msgs</depend>
 
   <exec_depend>ros2launch</exec_depend>
   <test_depend>ament_lint_auto</test_depend>

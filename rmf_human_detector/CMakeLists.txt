@@ -19,6 +19,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(rmf_obstacle_msgs REQUIRED)
+find_package(rmf_building_map_msgs REQUIRED)
 
 if(${OpenCV_VERSION} GREATER 4.0)
   add_definitions(-D_CV4)
@@ -54,6 +55,7 @@ ament_target_dependencies(
   cv_bridge
   OpenCV
   rmf_obstacle_msgs
+  rmf_building_map_msgs
 )
 
 install(TARGETS human_detector

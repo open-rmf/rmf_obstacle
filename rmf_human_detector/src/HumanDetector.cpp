@@ -4,6 +4,7 @@
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <rmf_human_detector/HumanDetector.hpp>
 
+
 HumanDetector::HumanDetector()
 : Node("human_detector"), _data(std::make_shared<Data>())
 {
@@ -51,6 +52,26 @@ HumanDetector::HumanDetector()
         {
           _data->_detector->camera_pose_cb(transformStamped.transform);
         }
+      }
+    });
+
+  auto qos_profile = rclcpp::QoS(10);
+  qos_profile.transient_local();
+  _data->_building_map_sub =
+    this->create_subscription<rmf_building_map_msgs::msg::BuildingMap>(
+    "/map",
+    qos_profile,
+    [=](const rmf_building_map_msgs::msg::BuildingMap::ConstSharedPtr& msg)
+    {
+      if (msg->levels.empty())
+      {
+        RCLCPP_ERROR(this->get_logger(), "Received empty building map");
+        return;
+      }
+
+      for (const auto& level : msg->levels)
+      {
+        _data->_detector->add_level(level.name, level.elevation);
       }
     });
 }

@@ -250,6 +250,12 @@ sensor_msgs::msg::Image YoloDetector::to_ros_image(const cv::Mat& image)
   return image_detections;
 }
 
+void YoloDetector::add_level(const std::string level_name,
+  const double level_elevation)
+{
+  _level_to_elevation.insert({level_name, level_elevation});
+}
+
 Plane YoloDetector::get_ground_plane()
 {
   // get inverse of camera_tf
@@ -272,12 +278,20 @@ Plane YoloDetector::get_ground_plane()
   // do transformation
   tf2::doTransform(in, out, camera_inv_tf_stamped);
 
-  // transform point in plane (0,0,0) from world coordinates to camera coordinates
+  // get level_elevation
+  double level_elevation = 0.0;
+  auto it = _level_to_elevation.find(_config->camera_level);
+  if (it != _level_to_elevation.end())
+  {
+    level_elevation = it->second;
+  }
+  // transform point in plane (0,0,level_elevation)
+  // from world coordinates to camera coordinates
   geometry_msgs::msg::PointStamped in2, out2;
   in2.point = geometry_msgs::build<geometry_msgs::msg::Point>()
     .x(0)
     .y(0)
-    .z(0);
+    .z(level_elevation);
 
   // do transformation
   tf2::doTransform(in2, out2, camera_inv_tf_stamped);
