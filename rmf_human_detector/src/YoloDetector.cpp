@@ -305,7 +305,8 @@ Plane YoloDetector::get_ground_plane()
   return Plane(plane_normal, point_in_plane);
 }
 
-void YoloDetector::set_camera_info(const sensor_msgs::msg::CameraInfo& camera_info_msg)
+void YoloDetector::set_camera_info(
+  const sensor_msgs::msg::CameraInfo& camera_info_msg)
 {
   if (!this->_config.camera_info.has_value())
     this->_config.camera_info = camera_info_msg;

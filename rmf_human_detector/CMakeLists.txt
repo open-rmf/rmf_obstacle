@@ -36,8 +36,6 @@ find_package(tf2_ros REQUIRED)
 
 add_library(human_detector_component SHARED src/HumanDetector.cpp src/YoloDetector.cpp)
 
-message("Image geometry: " ${image_geometry_INCLUDE_DIRS})
-
 target_include_directories(human_detector_component
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -74,6 +72,25 @@ rclcpp_components_register_node(human_detector_component
   PLUGIN "rmf_human_detector::HumanDetector"
   EXECUTABLE human_detector_node
 )
+
+if(BUILD_TESTING)
+  find_package(rmf_utils REQUIRED)
+  find_package(ament_cmake_uncrustify REQUIRED)
+
+  find_file(uncrustify_config_file
+    NAMES "rmf_code_style.cfg"
+    PATHS "${rmf_utils_DIR}/../../../share/rmf_utils/")
+
+    message("rmf_utils_DIR " ${rmf_utils_DIR} )
+  message("lol " ${uncrustify_config_file} )
+
+  ament_uncrustify(
+    ARGN include src test
+    CONFIG_FILE ${uncrustify_config_file}
+    MAX_LINE_LENGTH 80
+    LANGUAGE C++
+  )
+endif()
 
 install(DIRECTORY
   launch
