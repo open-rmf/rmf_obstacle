@@ -22,20 +22,48 @@
 #include <rclcpp/wait_for_message.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 
+#include <rmf_obstacle_msgs/msg/obstacles.hpp>
+#include <rmf_building_map_msgs/msg/building_map.hpp>
+
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 
+#include <tf2_msgs/msg/tf_message.hpp>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+
 namespace rmf_human_detector {
+
+class HumanDetectorData
+{
+public:
+  HumanDetectorData(HumanDetector* node) :
+    buffer(node->get_clock()), tfl(buffer, node, true)
+  {
+  }
+
+  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr _image_sub;
+  rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr _camera_info_sub;
+  rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr _camera_pose_sub;
+  rclcpp::Publisher<rmf_obstacle_msgs::msg::Obstacles>::SharedPtr _obstacles_pub;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr _image_detections_pub;
+  std::shared_ptr<YoloDetector> _detector;
+  std::string _camera_name;
+  std::string _camera_parent_name;
+  std::string _camera_image_topic;
+  std::string _camera_info_topic;
+  std::string _image_detections_topic;
+  tf2_ros::Buffer buffer;
+  tf2_ros::TransformListener tfl;
+};
 
 HumanDetector::HumanDetector(const rclcpp::NodeOptions& options)
 : Node("human_detector", options),
-  _data(std::make_shared<Data>()),
-  buffer(this->get_clock()),
-  tfl(buffer, this, true)
+  _data(std::make_shared<HumanDetectorData>(this))
 {
   make_detector();
 
-  _data->_obstacles_pub = this->create_publisher<Obstacles>(
+  _data->_obstacles_pub = this->create_publisher<rmf_obstacle_msgs::msg::Obstacles>(
     "/rmf_obstacles",
     rclcpp::SensorDataQoS()
   );
@@ -63,12 +91,12 @@ HumanDetector::HumanDetector(const rclcpp::NodeOptions& options)
       // publish rmf_obstacles & image with bounding boxes
       _data->_obstacles_pub->publish(std::move(rmf_obstacles));
       _data->_image_detections_pub->publish(std::move(image_detections));
-      if (buffer.canTransform(
+      if (_data->buffer.canTransform(
         _data->_camera_parent_name,
         _data->_camera_name,
         rclcpp::Time()))
       {
-        auto tStamped = buffer.lookupTransform(
+        auto tStamped = _data->buffer.lookupTransform(
           _data->_camera_parent_name,
           _data->_camera_name,
           rclcpp::Time());
@@ -206,7 +234,8 @@ void HumanDetector::make_detector()
   _data->_detector = std::make_shared<YoloDetector>(config);
   _data->_detector->add_level(level_name, level_elevation);
 
-  _data->_camera_info_sub = this->create_subscription<sensor_msgs::msg::CameraInfo>(
+  _data->_camera_info_sub =
+    this->create_subscription<sensor_msgs::msg::CameraInfo>(
     _data->_camera_info_topic,
     rclcpp::SensorDataQoS(),
     [&](const sensor_msgs::msg::CameraInfo& msg)

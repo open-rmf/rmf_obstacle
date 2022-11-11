@@ -38,6 +38,7 @@
 #include <rmf_obstacle_msgs/msg/obstacles.hpp>
 
 namespace rmf_human_detector {
+
 class Plane
 {
 public:
