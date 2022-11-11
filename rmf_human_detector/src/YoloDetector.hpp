@@ -79,9 +79,9 @@ public:
   ~YoloDetector();
 
   std::pair<Obstacles, sensor_msgs::msg::Image> image_cb(
-    const sensor_msgs::msg::Image::ConstSharedPtr & msg);
+    const sensor_msgs::msg::Image::ConstSharedPtr& msg);
 
-  void camera_pose_cb(const geometry_msgs::msg::Transform & msg);
+  void camera_pose_cb(const geometry_msgs::msg::Transform& msg);
 
   void add_level(const std::string level_name, const double level_elevation);
 
@@ -99,29 +99,29 @@ private:
   std::unordered_map<std::string, double> _level_to_elevation;
 
   // Methods
-  cv::Mat format_yolov5(const cv::Mat & source);
+  cv::Mat format_yolov5(const cv::Mat& source);
 
-  std::vector<cv::Mat> detect(cv::Mat & input_image);
+  std::vector<cv::Mat> detect(cv::Mat& input_image);
 
   Obstacles post_process(
-    const cv::Mat & original_image, cv::Mat & image,
-    std::vector<cv::Mat> & detections);
+    const cv::Mat& original_image, cv::Mat& image,
+    std::vector<cv::Mat>& detections);
 
   Obstacles to_rmf_obstacles(
-    const std::vector<int> & final_class_ids,
-    const std::vector<cv::Rect> & final_boxes);
+    const std::vector<int>& final_class_ids,
+    const std::vector<cv::Rect>& final_boxes);
 
   Plane get_ground_plane();
 
-  sensor_msgs::msg::Image to_ros_image(const cv::Mat & image);
+  sensor_msgs::msg::Image to_ros_image(const cv::Mat& image);
 
   void drawing(
-    const cv::Mat & original_image, cv::Mat & image,
-    const std::vector<int> & final_class_ids,
-    const std::vector<float> & final_confidences,
-    const std::vector<cv::Rect> & final_boxes);
+    const cv::Mat& original_image, cv::Mat& image,
+    const std::vector<int>& final_class_ids,
+    const std::vector<float>& final_confidences,
+    const std::vector<cv::Rect>& final_boxes);
 
-  void draw_label(cv::Mat & input_image, std::string label, int left, int top);
+  void draw_label(cv::Mat& input_image, std::string label, int left, int top);
 };
 
 #endif  // YOLODETECTOR_HPP_

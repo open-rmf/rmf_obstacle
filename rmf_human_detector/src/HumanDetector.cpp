@@ -43,13 +43,14 @@ HumanDetector::HumanDetector()
   _data->_image_sub = this->create_subscription<sensor_msgs::msg::Image>(
     _data->_camera_image_topic,
     rclcpp::SensorDataQoS(),
-    [&](const sensor_msgs::msg::Image::ConstSharedPtr & msg)
+    [&](const sensor_msgs::msg::Image::ConstSharedPtr& msg)
     {
       // perform detections
       auto [rmf_obstacles, image_detections] = _data->_detector->image_cb(msg);
 
       // populate fields like time stamp, etc
-      for (auto & obstacle : rmf_obstacles.obstacles) {
+      for (auto& obstacle : rmf_obstacles.obstacles)
+      {
         obstacle.header.stamp = this->get_clock()->now();
       }
 
@@ -61,9 +62,10 @@ HumanDetector::HumanDetector()
   _data->_camera_pose_sub = this->create_subscription<tf2_msgs::msg::TFMessage>(
     _data->_camera_pose_topic,
     rclcpp::SensorDataQoS(),
-    [ = ](const tf2_msgs::msg::TFMessage::ConstSharedPtr & msg)
+    [=](const tf2_msgs::msg::TFMessage::ConstSharedPtr& msg)
     {
-      for (auto & transformStamped : msg->transforms) {
+      for (auto& transformStamped : msg->transforms)
+      {
         if (transformStamped.header.frame_id == _data->_camera_parent_name &&
         transformStamped.child_frame_id == _data->_camera_name)
         {
@@ -78,14 +80,16 @@ HumanDetector::HumanDetector()
     this->create_subscription<rmf_building_map_msgs::msg::BuildingMap>(
     "/map",
     qos_profile,
-    [ = ](const rmf_building_map_msgs::msg::BuildingMap::ConstSharedPtr & msg)
+    [=](const rmf_building_map_msgs::msg::BuildingMap::ConstSharedPtr& msg)
     {
-      if (msg->levels.empty()) {
+      if (msg->levels.empty())
+      {
         RCLCPP_ERROR(this->get_logger(), "Received empty building map");
         return;
       }
 
-      for (const auto & level : msg->levels) {
+      for (const auto& level : msg->levels)
+      {
         _data->_detector->add_level(level.name, level.elevation);
       }
     });
@@ -138,7 +142,8 @@ void HumanDetector::make_detector()
   );
 
   std::filesystem::path model_file(nn_filepath);
-  if (!std::filesystem::exists(model_file)) {
+  if (!std::filesystem::exists(model_file))
+  {
     RCLCPP_INFO(
       this->get_logger(),
       "Model file %s does not exist, follow README instructions to get the file",
@@ -155,7 +160,8 @@ void HumanDetector::make_detector()
   );
 
   std::filesystem::path labels_file(labels_filepath);
-  if (!std::filesystem::exists(labels_file)) {
+  if (!std::filesystem::exists(labels_file))
+  {
     RCLCPP_INFO(
       this->get_logger(),
       "Labels file %s does not exist, follow README instructions to get the file",
@@ -217,7 +223,7 @@ HumanDetector::~HumanDetector()
 {
 }
 
-int main(int argc, char ** argv)
+int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
   std::cout << "Starting HumanDetector node" << std::endl;

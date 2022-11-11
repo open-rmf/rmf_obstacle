@@ -51,39 +51,46 @@ YoloDetector::YoloDetector(Config config)
 : _config(config)
 {
   _net = cv::dnn::readNet(_config.nn_filepath);
-  if (_config.use_gpu) {
+  if (_config.use_gpu)
+  {
     _net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
     _net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
   }
 
   std::ifstream ifs(_config.labels_filepath);
   std::string line;
-  while (getline(ifs, line)) {
+  while (getline(ifs, line))
+  {
     _class_list.push_back(line);
   }
 
-  if (_config.visualize) {
+  if (_config.visualize)
+  {
     cv::namedWindow(_config.camera_name, cv::WINDOW_AUTOSIZE);
   }
 }
 
 YoloDetector::~YoloDetector()
 {
-  if (_config.visualize) {
+  if (_config.visualize)
+  {
     cv::destroyWindow(_config.camera_name);
   }
 }
 
 std::pair<YoloDetector::Obstacles,
   sensor_msgs::msg::Image> YoloDetector::image_cb(
-  const sensor_msgs::msg::Image::ConstSharedPtr & msg)
+  const sensor_msgs::msg::Image::ConstSharedPtr& msg)
 {
   // bridge from ROS image type to OpenCV image type
   cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, msg->encoding);
   cv::Mat original_image;
-  if (msg->encoding == sensor_msgs::image_encodings::BGR8) {
+  if (msg->encoding == sensor_msgs::image_encodings::BGR8)
+  {
     original_image = cv_ptr->image;
-  } else if (msg->encoding == sensor_msgs::image_encodings::RGB8) {
+  }
+  else if (msg->encoding == sensor_msgs::image_encodings::RGB8)
+  {
     cv::cvtColor(cv_ptr->image, original_image, cv::COLOR_RGB2BGR);
   }
 
@@ -98,12 +105,12 @@ std::pair<YoloDetector::Obstacles,
   return std::make_pair(rmf_obstacles, image_detections);
 }
 
-void YoloDetector::camera_pose_cb(const geometry_msgs::msg::Transform & msg)
+void YoloDetector::camera_pose_cb(const geometry_msgs::msg::Transform& msg)
 {
   _camera_pose = msg;
 }
 
-cv::Mat YoloDetector::format_yolov5(const cv::Mat & source)
+cv::Mat YoloDetector::format_yolov5(const cv::Mat& source)
 {
   int col = source.cols;
   int row = source.rows;
@@ -114,7 +121,7 @@ cv::Mat YoloDetector::format_yolov5(const cv::Mat & source)
   return result;
 }
 
-std::vector<cv::Mat> YoloDetector::detect(cv::Mat & input_image)
+std::vector<cv::Mat> YoloDetector::detect(cv::Mat& input_image)
 {
   // Convert to blob
   cv::Mat blob;
@@ -133,9 +140,9 @@ std::vector<cv::Mat> YoloDetector::detect(cv::Mat & input_image)
 }
 
 YoloDetector::Obstacles YoloDetector::post_process(
-  const cv::Mat & original_image,
-  cv::Mat & image,
-  std::vector<cv::Mat> & detections)
+  const cv::Mat& original_image,
+  cv::Mat& image,
+  std::vector<cv::Mat>& detections)
 {
   // Initialize vectors to hold respective outputs while unwrapping detections
   std::vector<int> class_ids;
@@ -151,14 +158,16 @@ YoloDetector::Obstacles YoloDetector::post_process(
   // the 85 entries are: px, py, w, h, confidence, 80 class_scores
   const int cols = 5 + _class_list.size();
   const int rows = detections[0].total() / cols;
-  float * data = reinterpret_cast<float *>(detections[0].data);
+  float* data = reinterpret_cast<float*>(detections[0].data);
 
   // Iterate through 25200 detections
-  for (int i = 0; i < rows; ++i, data += cols) {
+  for (int i = 0; i < rows; ++i, data += cols)
+  {
     float confidence = data[4];
     // Discard bad detections and continue
-    if (confidence >= _config.confidence_threshold) {
-      float * classes_scores = data + 5;
+    if (confidence >= _config.confidence_threshold)
+    {
+      float* classes_scores = data + 5;
       // Create a 1x80 Mat and store class scores of 80 classes
       cv::Mat scores(1, _class_list.size(), CV_32FC1, classes_scores);
       // Perform minMaxLoc and acquire the index of best class  score
@@ -167,7 +176,8 @@ YoloDetector::Obstacles YoloDetector::post_process(
       cv::minMaxLoc(scores, 0, &max_class_score, 0, &class_id);
       // Continue if the class score is above the threshold
       // class_id.x == 0 corresponds to objects labelled "person"
-      if (max_class_score > _config.score_threshold && class_id.x == 0) {
+      if (max_class_score > _config.score_threshold && class_id.x == 0)
+      {
         // Store class ID and confidence in the pre-defined respective vectors
         confidences.push_back(confidence);
         class_ids.push_back(class_id.x);
@@ -198,7 +208,8 @@ YoloDetector::Obstacles YoloDetector::post_process(
   std::vector<int> final_class_ids;
   std::vector<float> final_confidences;
   std::vector<cv::Rect> final_boxes;
-  for (auto i : indices) {
+  for (auto i : indices)
+  {
     final_class_ids.push_back(class_ids[i]);
     final_confidences.push_back(confidences[i]);
     final_boxes.push_back(boxes[i]);
@@ -213,7 +224,8 @@ YoloDetector::Obstacles YoloDetector::post_process(
     final_boxes
   );
 
-  if (_config.visualize) {
+  if (_config.visualize)
+  {
     // OpenCV display
     cv::imshow(_config.camera_name, image);
     cv::waitKey(3);
@@ -228,7 +240,7 @@ YoloDetector::Obstacles YoloDetector::post_process(
   return rmf_obstacles;
 }
 
-sensor_msgs::msg::Image YoloDetector::to_ros_image(const cv::Mat & image)
+sensor_msgs::msg::Image YoloDetector::to_ros_image(const cv::Mat& image)
 {
   cv_bridge::CvImage img_bridge;
   std_msgs::msg::Header header;
@@ -271,7 +283,8 @@ Plane YoloDetector::get_ground_plane()
   // get level_elevation
   double level_elevation = 0.0;
   auto it = _level_to_elevation.find(_config.camera_level);
-  if (it != _level_to_elevation.end()) {
+  if (it != _level_to_elevation.end())
+  {
     level_elevation = it->second;
   }
   // transform point in plane (0,0,level_elevation)
@@ -291,8 +304,8 @@ Plane YoloDetector::get_ground_plane()
 }
 
 YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
-  const std::vector<int> & final_class_ids,
-  const std::vector<cv::Rect> & final_boxes)
+  const std::vector<int>& final_class_ids,
+  const std::vector<cv::Rect>& final_boxes)
 {
   auto rmf_obstacles = Obstacles();
   rmf_obstacles.obstacles.reserve(final_boxes.size());
@@ -301,7 +314,8 @@ YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
   model.fromCameraInfo(_config.camera_info);
 
   // prepare obstacle_msg objects and add to rmf_obstacles
-  for (size_t i = 0; i < final_boxes.size(); i++) {
+  for (size_t i = 0; i < final_boxes.size(); i++)
+  {
     // construct 3d ray from camera to middle of the bottom edge of bounding box
     cv::Rect box = final_boxes[i];
     int left = box.x;
@@ -360,13 +374,14 @@ YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
 }
 
 void YoloDetector::drawing(
-  const cv::Mat & original_image,
-  cv::Mat & image,
-  const std::vector<int> & final_class_ids,
-  const std::vector<float> & final_confidences,
-  const std::vector<cv::Rect> & final_boxes)
+  const cv::Mat& original_image,
+  cv::Mat& image,
+  const std::vector<int>& final_class_ids,
+  const std::vector<float>& final_confidences,
+  const std::vector<cv::Rect>& final_boxes)
 {
-  for (size_t i = 0; i < final_class_ids.size(); i++) {
+  for (size_t i = 0; i < final_class_ids.size(); i++)
+  {
     cv::Rect box = final_boxes[i];
     int left = box.x;
     int top = box.y;
@@ -396,10 +411,12 @@ void YoloDetector::drawing(
   cv::putText(image, label, cv::Point(20, 40), FONT_FACE, FONT_SCALE, RED);
 
   // Slicing to crop the image
-  image = image(cv::Range(0, original_image.rows), cv::Range(0, original_image.cols));
+  image =
+    image(cv::Range(0, original_image.rows), cv::Range(0, original_image.cols));
 }
 
-void YoloDetector::draw_label(cv::Mat & input_image, std::string label, int left, int top)
+void YoloDetector::draw_label(cv::Mat& input_image, std::string label, int left,
+  int top)
 {
   // Display the label at the top of the bounding box
   int baseLine;
