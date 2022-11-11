@@ -189,16 +189,10 @@ void HumanDetector::make_detector()
     "Setting parameter nms_threshold to %f", nms_threshold
   );
 
-  // get one camera_info msg
-  sensor_msgs::msg::CameraInfo camera_info;
-  std::shared_ptr<rclcpp::Node> temp_node =
-    std::make_shared<rclcpp::Node>("wait_for_msg_node");
-  rclcpp::wait_for_message(camera_info, temp_node, _data->_camera_info_topic);
-
   // make detector
   YoloDetector::Config config = {
     _data->_camera_name,
-    camera_info,
+    std::nullopt,
     visualize,
     camera_level,
     obstacle_lifetime_sec,
@@ -211,6 +205,14 @@ void HumanDetector::make_detector()
 
   _data->_detector = std::make_shared<YoloDetector>(config);
   _data->_detector->add_level(level_name, level_elevation);
+
+  _data->_camera_info_sub = this->create_subscription<sensor_msgs::msg::CameraInfo>(
+    _data->_camera_info_topic,
+    rclcpp::SensorDataQoS(),
+    [&](const sensor_msgs::msg::CameraInfo& msg)
+    {
+      _data->_detector->set_camera_info(msg);
+    });
 }
 
 HumanDetector::~HumanDetector()

@@ -264,7 +264,7 @@ Plane YoloDetector::get_ground_plane()
 {
   // get inverse of camera_tf
   tf2::Transform camera_tf, camera_inv_tf;
-  tf2::fromMsg(_camera_pose, camera_tf);
+  tf2::fromMsg(this->_camera_pose.value(), camera_tf);
   camera_inv_tf = camera_tf.inverse();
   geometry_msgs::msg::Transform camera_inv_tf_msg;
   camera_inv_tf_msg = tf2::toMsg(camera_inv_tf);
@@ -305,15 +305,27 @@ Plane YoloDetector::get_ground_plane()
   return Plane(plane_normal, point_in_plane);
 }
 
+void YoloDetector::set_camera_info(const sensor_msgs::msg::CameraInfo& camera_info_msg)
+{
+  if (!this->_config.camera_info.has_value())
+    this->_config.camera_info = camera_info_msg;
+}
+
 YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
   const std::vector<int>& final_class_ids,
   const std::vector<cv::Rect>& final_boxes)
 {
   auto rmf_obstacles = Obstacles();
+  if (!_camera_pose.has_value())
+    return rmf_obstacles;
+
+  if (!_config.camera_info.has_value())
+    return rmf_obstacles;
+
   rmf_obstacles.obstacles.reserve(final_boxes.size());
 
   image_geometry::PinholeCameraModel model;
-  model.fromCameraInfo(_config.camera_info);
+  model.fromCameraInfo(_config.camera_info.value());
 
   // prepare obstacle_msg objects and add to rmf_obstacles
   for (size_t i = 0; i < final_boxes.size(); i++)
@@ -344,7 +356,7 @@ YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
 
     // convert intersection from camera coordinates to world coordinates
     geometry_msgs::msg::TransformStamped camera_tf_stamped;
-    camera_tf_stamped.transform = _camera_pose;
+    camera_tf_stamped.transform = _camera_pose.value();
     geometry_msgs::msg::PointStamped in, out;
     in.point = geometry_msgs::build<geometry_msgs::msg::Point>()
       .x(intersection.x())

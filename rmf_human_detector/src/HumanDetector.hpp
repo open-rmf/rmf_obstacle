@@ -26,6 +26,7 @@
 #include <rmf_building_map_msgs/msg/building_map.hpp>
 
 #include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 
 #include <tf2_msgs/msg/tf_message.hpp>
 #include <tf2_ros/buffer.h>
@@ -45,6 +46,7 @@ private:
   struct Data
   {
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr _image_sub;
+    rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr _camera_info_sub;
     rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr _camera_pose_sub;
     rclcpp::Publisher<Obstacles>::SharedPtr _obstacles_pub;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr _image_detections_pub;

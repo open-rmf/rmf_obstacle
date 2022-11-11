@@ -17,6 +17,7 @@
 
 #include <Eigen/Geometry>
 
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -63,7 +64,7 @@ public:
   {
     // Camera configurations
     std::string camera_name;
-    sensor_msgs::msg::CameraInfo camera_info;
+    std::optional<sensor_msgs::msg::CameraInfo> camera_info;
     const bool visualize = true;
     std::string camera_level;
     const int obstacle_lifetime_sec;
@@ -86,6 +87,8 @@ public:
 
   void add_level(const std::string level_name, const double level_elevation);
 
+  void set_camera_info(const sensor_msgs::msg::CameraInfo& camera_info_msg);
+
 private:
   // Yolov5s Constants
   // Camera image gets scaled to this size before inference
@@ -96,7 +99,7 @@ private:
   std::vector<std::string> _class_list;
   cv::dnn::Net _net;
   Config _config;
-  geometry_msgs::msg::Transform _camera_pose;
+  std::optional<geometry_msgs::msg::Transform> _camera_pose;
   std::unordered_map<std::string, double> _level_to_elevation;
 
   // Methods
