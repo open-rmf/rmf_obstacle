@@ -36,6 +36,7 @@
 #include <rmf_obstacle_msgs/msg/obstacle.hpp>
 #include <rmf_obstacle_msgs/msg/obstacles.hpp>
 
+namespace rmf_human_detector {
 class Plane
 {
 public:
@@ -123,5 +124,6 @@ private:
 
   void draw_label(cv::Mat& input_image, std::string label, int left, int top);
 };
+}
 
 #endif  // YOLODETECTOR_HPP_

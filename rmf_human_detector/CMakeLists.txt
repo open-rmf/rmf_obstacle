@@ -23,6 +23,7 @@ find_package(cv_bridge REQUIRED)
 find_package(image_geometry REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
 find_package(rmf_building_map_msgs REQUIRED)
 find_package(rmf_obstacle_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -33,33 +34,58 @@ find_package(tf2_ros REQUIRED)
 
 #=============================================================
 
-add_executable(human_detector src/HumanDetector.cpp src/YoloDetector.cpp)
+add_library(human_detector_component SHARED src/HumanDetector.cpp src/YoloDetector.cpp)
 
-target_include_directories(human_detector
+message("Image geometry: " ${image_geometry_INCLUDE_DIRS})
+
+target_include_directories(human_detector_component
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
-
-ament_target_dependencies(human_detector
-  cv_bridge
-  image_geometry
-  OpenCV
-  rclcpp
-  rmf_building_map_msgs
-  rmf_obstacle_msgs
-  sensor_msgs
-  tf2
-  tf2_geometry_msgs
-  tf2_msgs
-  tf2_ros
+    $<INSTALL_INTERFACE:include>
+    ${OpenCV_INCLUDE_DIRS}
+    ${rclcpp_INCLUDE_DIRS}
+    ${rmf_building_map_msgs_INCLUDE_DIRS}
+    ${rmf_obstacle_msgs_INCLUDE_DIRS}
+    ${sensor_msgs_INCLUDE_DIRS}
+    ${tf2_INCLUDE_DIRS}
+    ${tf2_msgs_INCLUDE_DIRS}
+    ${tf2_ros_INCLUDE_DIRS}
 )
 
-install(TARGETS human_detector
-  DESTINATION lib/${PROJECT_NAME})
+target_link_libraries(human_detector_component
+  PUBLIC
+    ${cv_bridge_LIBRARIES}
+    ${image_geometry_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+    rclcpp::rclcpp
+    image_geometry::image_geometry
+    cv_bridge::cv_bridge
+    tf2_geometry_msgs::tf2_geometry_msgs
+    ${rclcpp_components_LIBRARIES}
+    ${rmf_building_map_msgs_LIBRARIES}
+    ${rmf_obstacle_msgs_LIBRARIES}
+    ${sensor_msgs_LIBRARIES}
+    ${tf2_LIBRARIES}
+    ${tf2_msgs_LIBRARIES}
+    ${tf2_ros_LIBRARIES}
+)
+
+rclcpp_components_register_node(human_detector_component
+  PLUGIN "rmf_human_detector::HumanDetector"
+  EXECUTABLE human_detector_node
+)
 
 install(DIRECTORY
   launch
   assets
-  DESTINATION share/${PROJECT_NAME})
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(
+  TARGETS human_detector_component
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
 
 ament_package()

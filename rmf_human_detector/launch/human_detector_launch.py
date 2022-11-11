@@ -41,7 +41,7 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
            package='rmf_human_detector',
-           executable='human_detector',
+           executable='human_detector_node',
            parameters=[
                 {"camera_name": "camera1"},
                 {"camera_level": "L1"},

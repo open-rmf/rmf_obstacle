@@ -20,13 +20,18 @@
 #include <utility>
 
 #include <rclcpp/wait_for_message.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
 
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 
-HumanDetector::HumanDetector()
-: Node("human_detector"), _data(std::make_shared<Data>()),
-  buffer(this->get_clock()), tfl(buffer, this, true)
+namespace rmf_human_detector {
+
+HumanDetector::HumanDetector(const rclcpp::NodeOptions& options)
+: Node("human_detector", options),
+  _data(std::make_shared<Data>()),
+  buffer(this->get_clock()),
+  tfl(buffer, this, true)
 {
   make_detector();
 
@@ -129,8 +134,6 @@ void HumanDetector::make_detector()
     this->get_logger(),
     "Setting parameter level_elevation parameter to %d", level_elevation);
 
-  _data->_detector->add_level(level_name, level_elevation);
-
   std::filesystem::path model_file(nn_filepath);
   if (!std::filesystem::exists(model_file))
   {
@@ -207,17 +210,12 @@ void HumanDetector::make_detector()
     nms_threshold};
 
   _data->_detector = std::make_shared<YoloDetector>(config);
+  _data->_detector->add_level(level_name, level_elevation);
 }
 
 HumanDetector::~HumanDetector()
 {
 }
-
-int main(int argc, char** argv)
-{
-  rclcpp::init(argc, argv);
-  std::cout << "Starting HumanDetector node" << std::endl;
-  rclcpp::spin(std::make_shared<HumanDetector>());
-  rclcpp::shutdown();
-  return 0;
 }
+
+RCLCPP_COMPONENTS_REGISTER_NODE(rmf_human_detector::HumanDetector)

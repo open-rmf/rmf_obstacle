@@ -31,11 +31,12 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
+namespace rmf_human_detector {
 class HumanDetector : public rclcpp::Node
 {
 public:
   using Obstacles = rmf_obstacle_msgs::msg::Obstacles;
-  HumanDetector();
+  HumanDetector(const rclcpp::NodeOptions& options);
   ~HumanDetector();
 
 private:
@@ -58,5 +59,6 @@ private:
   tf2_ros::Buffer buffer;
   tf2_ros::TransformListener tfl;
 };
+}
 
 #endif  // HUMANDETECTOR_HPP_

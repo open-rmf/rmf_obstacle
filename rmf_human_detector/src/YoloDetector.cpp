@@ -47,6 +47,8 @@ const cv::Scalar BLUE = cv::Scalar(255, 178, 50);
 const cv::Scalar YELLOW = cv::Scalar(0, 255, 255);
 const cv::Scalar RED = cv::Scalar(0, 0, 255);
 
+namespace rmf_human_detector {
+
 YoloDetector::YoloDetector(Config config)
 : _config(config)
 {
@@ -440,4 +442,5 @@ void YoloDetector::draw_label(cv::Mat& input_image, std::string label, int left,
     YELLOW,
     FONT_THICKNESS
   );
+}
 }
