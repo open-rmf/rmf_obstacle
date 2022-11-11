@@ -96,7 +96,7 @@ $ sudo ldconfig
 
 First run the hotel world rmf demo from your `Open-RMF` workspace:
 ```bash
-ros2 launch rmf_demos_ign hotel.launch.xml
+ros2 launch rmf_demos_gz hotel.launch.xml
 ```
 
 Then run the `rmf_human_detector` launch file from your `Open-RMF` workspace:

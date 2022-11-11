@@ -21,10 +21,15 @@
 #include "YoloDetector.hpp"
 
 #include <rclcpp/rclcpp.hpp>
+
 #include <rmf_obstacle_msgs/msg/obstacles.hpp>
 #include <rmf_building_map_msgs/msg/building_map.hpp>
+
 #include <sensor_msgs/msg/image.hpp>
+
 #include <tf2_msgs/msg/tf_message.hpp>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
 
 class HumanDetector : public rclcpp::Node
 {
@@ -48,11 +53,12 @@ private:
     std::string _camera_name;
     std::string _camera_parent_name;
     std::string _camera_image_topic;
-    std::string _camera_pose_topic;
     std::string _camera_info_topic;
     std::string _image_detections_topic;
   };
   std::shared_ptr<Data> _data;
+  tf2_ros::Buffer buffer;
+  tf2_ros::TransformListener tfl;
 };
 
 #endif  // HUMANDETECTOR_HPP_

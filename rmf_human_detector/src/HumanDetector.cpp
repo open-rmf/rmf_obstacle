@@ -25,7 +25,8 @@
 #include <sensor_msgs/msg/camera_info.hpp>
 
 HumanDetector::HumanDetector()
-: Node("human_detector"), _data(std::make_shared<Data>())
+: Node("human_detector"), _data(std::make_shared<Data>()),
+  buffer(this->get_clock()), tfl(buffer, this, true)
 {
   make_detector();
 
@@ -57,20 +58,19 @@ HumanDetector::HumanDetector()
       // publish rmf_obstacles & image with bounding boxes
       _data->_obstacles_pub->publish(std::move(rmf_obstacles));
       _data->_image_detections_pub->publish(std::move(image_detections));
-    });
-
-  _data->_camera_pose_sub = this->create_subscription<tf2_msgs::msg::TFMessage>(
-    _data->_camera_pose_topic,
-    rclcpp::SensorDataQoS(),
-    [=](const tf2_msgs::msg::TFMessage::ConstSharedPtr& msg)
-    {
-      for (auto& transformStamped : msg->transforms)
+      if (buffer.canTransform(
+            _data->_camera_parent_name,
+            _data->_camera_name,
+            rclcpp::Time()))
       {
-        if (transformStamped.header.frame_id == _data->_camera_parent_name &&
-        transformStamped.child_frame_id == _data->_camera_name)
-        {
-          _data->_detector->camera_pose_cb(transformStamped.transform);
-        }
+        auto tStamped = buffer.lookupTransform(
+          _data->_camera_parent_name,
+          _data->_camera_name,
+          rclcpp::Time());
+        geometry_msgs::msg::Transform t;
+        t.rotation = tStamped.transform.rotation;
+        t.translation = tStamped.transform.translation;
+        _data->_detector->camera_pose_cb(t);
       }
     });
 
@@ -103,7 +103,6 @@ void HumanDetector::make_detector()
     "Setting parameter camera_name to %s", _data->_camera_name.c_str()
   );
   _data->_camera_image_topic = _data->_camera_name;
-  _data->_camera_pose_topic = _data->_camera_name + "/pose";
   _data->_camera_info_topic = _data->_camera_name + "/camera_info";
   _data->_image_detections_topic = _data->_camera_name + "/image_detections";
 

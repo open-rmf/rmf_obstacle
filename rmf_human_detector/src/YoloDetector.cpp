@@ -107,7 +107,7 @@ std::pair<YoloDetector::Obstacles,
 
 void YoloDetector::camera_pose_cb(const geometry_msgs::msg::Transform& msg)
 {
-  _camera_pose = msg;
+  this->_camera_pose = msg;
 }
 
 cv::Mat YoloDetector::format_yolov5(const cv::Mat& source)
@@ -188,8 +188,8 @@ YoloDetector::Obstacles YoloDetector::post_process(
         float w = data[2];
         float h = data[3];
         // Bounding box coordinates
-        int left = static_cast<int>((x - 0.5 * w) * x_factor);
-        int top = static_cast<int>((y - 0.5 * h) * y_factor);
+        int left = static_cast<int>((px - 0.5 * w) * x_factor);
+        int top = static_cast<int>((py - 0.5 * h) * y_factor);
         int width = static_cast<int>(w * x_factor);
         int height = static_cast<int>(h * y_factor);
         // Store good detections in the boxes vector
