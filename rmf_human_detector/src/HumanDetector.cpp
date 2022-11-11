@@ -73,26 +73,6 @@ HumanDetector::HumanDetector()
         _data->_detector->camera_pose_cb(t);
       }
     });
-
-  auto qos_profile = rclcpp::QoS(10);
-  qos_profile.transient_local();
-  _data->_building_map_sub =
-    this->create_subscription<rmf_building_map_msgs::msg::BuildingMap>(
-    "/map",
-    qos_profile,
-    [=](const rmf_building_map_msgs::msg::BuildingMap::ConstSharedPtr& msg)
-    {
-      if (msg->levels.empty())
-      {
-        RCLCPP_ERROR(this->get_logger(), "Received empty building map");
-        return;
-      }
-
-      for (const auto& level : msg->levels)
-      {
-        _data->_detector->add_level(level.name, level.elevation);
-      }
-    });
 }
 
 void HumanDetector::make_detector()
@@ -139,6 +119,17 @@ void HumanDetector::make_detector()
     this->get_logger(),
     "Setting parameter nn_filepath to %s", nn_filepath.c_str()
   );
+
+  const std::string level_name = this->declare_parameter("level_name", "L1");
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter level_name parameter to %s", level_name.c_str());
+  const int level_elevation = this->declare_parameter("level_elevation", 1);
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Setting parameter level_elevation parameter to %d", level_elevation);
+
+  _data->_detector->add_level(level_name, level_elevation);
 
   std::filesystem::path model_file(nn_filepath);
   if (!std::filesystem::exists(model_file))
