@@ -59,9 +59,9 @@ HumanDetector::HumanDetector()
       _data->_obstacles_pub->publish(std::move(rmf_obstacles));
       _data->_image_detections_pub->publish(std::move(image_detections));
       if (buffer.canTransform(
-            _data->_camera_parent_name,
-            _data->_camera_name,
-            rclcpp::Time()))
+          _data->_camera_parent_name,
+          _data->_camera_name,
+          rclcpp::Time()))
       {
         auto tStamped = buffer.lookupTransform(
           _data->_camera_parent_name,
