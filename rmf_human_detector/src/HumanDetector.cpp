@@ -37,8 +37,8 @@ namespace rmf_human_detector {
 class HumanDetectorData
 {
 public:
-  HumanDetectorData(HumanDetector* node) :
-    buffer(node->get_clock()), tfl(buffer, node, true)
+  HumanDetectorData(HumanDetector* node)
+  : buffer(node->get_clock()), tfl(buffer, node, true)
   {
   }
 
@@ -63,10 +63,11 @@ HumanDetector::HumanDetector(const rclcpp::NodeOptions& options)
 {
   make_detector();
 
-  _data->_obstacles_pub = this->create_publisher<rmf_obstacle_msgs::msg::Obstacles>(
+  _data->_obstacles_pub =
+    this->create_publisher<rmf_obstacle_msgs::msg::Obstacles>(
     "/rmf_obstacles",
     rclcpp::SensorDataQoS()
-  );
+    );
 
   _data->_image_detections_pub =
     this->create_publisher<sensor_msgs::msg::Image>(
