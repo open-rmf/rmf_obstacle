@@ -1,15 +1,28 @@
-import launch
+# Copyright 2022 Open Source Robotics Foundation, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
 from launch_ros.actions import Node
-from launch.substitutions import EnvironmentVariable
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 
 import os
 
+
 def generate_launch_description():
-    # Bridge
+    rmf_human_detector_dir = get_package_share_directory("rmf_human_detector")
+    model_path = os.path.join(rmf_human_detector_dir, "assets", "yolov5s.onnx")
+    labels_path = os.path.join(rmf_human_detector_dir, "assets", "coco.names")
     bridge = Node(
         package='ros_ign_bridge',
         executable='parameter_bridge',
@@ -32,8 +45,8 @@ def generate_launch_description():
            parameters=[
                 {"camera_name": "camera1"},
                 {"camera_level": "L1"},
-                {"nn_filepath": "/home/osrc/rmf_ws/src/rmf/rmf_obstacle_detectors/rmf_human_detector/assets/yolov5s.onnx"},
-                {"labels_filepath": "/home/osrc/rmf_ws/src/rmf/rmf_obstacle_detectors/rmf_human_detector/assets/coco.names"},
+                {"nn_filepath": model_path},
+                {"labels_filepath": labels_path},
                 {"use_gpu": True},
            ]
         ),
