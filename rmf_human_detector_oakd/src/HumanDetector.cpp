@@ -268,7 +268,7 @@ HumanDetector::HumanDetector(
 
           rmf_obstacle_msgs::msg::Obstacle obstacle;
           obstacle.header.frame_id = data->frame_id;
-          obstacle.header.stamp = this->get_clock()->now();
+          // TODO(YV): Stamp
           obstacle.id = obstacle_count;
           obstacle.id = obstacle_count;
           obstacle.level_name = data->level_name;
