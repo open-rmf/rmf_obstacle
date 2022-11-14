@@ -355,6 +355,19 @@ YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
     double alpha = -plane.getD() / n.dot(d);
     Eigen::Vector3f intersection(alpha * d);
 
+    // convert intersection from camera coordinates to world coordinates
+    geometry_msgs::msg::TransformStamped camera_tf_stamped;
+    camera_tf_stamped.transform = _camera_pose.value();
+    geometry_msgs::msg::PointStamped in, out;
+    in.point = geometry_msgs::build<geometry_msgs::msg::Point>()
+      .x(intersection.x())
+      .y(intersection.y())
+      .z(intersection.z());
+
+    // do transformation
+    tf2::doTransform(in, out, camera_tf_stamped);
+    cv::Point3d obstacle(out.point.x, out.point.y, out.point.z);
+
     // populate rmf_obstacle
     auto rmf_obstacle = Obstacle();
     rmf_obstacle.header.frame_id = _config.camera_name;
@@ -365,6 +378,9 @@ YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
     rmf_obstacle.bbox.center.position.x = intersection.x();
     rmf_obstacle.bbox.center.position.y = intersection.y();
     rmf_obstacle.bbox.center.position.z = intersection.z();
+    rmf_obstacle.bbox.center.position.x = obstacle.x;
+    rmf_obstacle.bbox.center.position.y = obstacle.y;
+    rmf_obstacle.bbox.center.position.z = obstacle.z;
     rmf_obstacle.bbox.size.x = 1.0;
     rmf_obstacle.bbox.size.y = 1.0;
     rmf_obstacle.bbox.size.z = 2.0;
