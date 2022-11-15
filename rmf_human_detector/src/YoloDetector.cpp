@@ -355,19 +355,6 @@ YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
     double alpha = -plane.getD() / n.dot(d);
     Eigen::Vector3f intersection(alpha * d);
 
-    // convert intersection from camera coordinates to world coordinates
-    geometry_msgs::msg::TransformStamped camera_tf_stamped;
-    camera_tf_stamped.transform = _camera_pose.value();
-    geometry_msgs::msg::PointStamped in, out;
-    in.point = geometry_msgs::build<geometry_msgs::msg::Point>()
-      .x(intersection.x())
-      .y(intersection.y())
-      .z(intersection.z());
-
-    // do transformation
-    tf2::doTransform(in, out, camera_tf_stamped);
-    cv::Point3d obstacle(out.point.x, out.point.y, out.point.z);
-
     // populate rmf_obstacle
     auto rmf_obstacle = Obstacle();
     rmf_obstacle.header.frame_id = _config.camera_name;

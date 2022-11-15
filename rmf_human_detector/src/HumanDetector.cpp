@@ -77,17 +77,38 @@ public:
 
   /// \brief Transform listener
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr _image_sub;
+
+  /// \brief Camera info subscriber
   rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr _camera_info_sub;
-  rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr _camera_pose_sub;
+
+  /// \brief RMF obstacles publisher
   rclcpp::Publisher<rmf_obstacle_msgs::msg::Obstacles>::SharedPtr _obstacles_pub;
+
+  /// \brief Detections publisher
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr _image_detections_pub;
+
+  /// \brief YOLO detector
   std::shared_ptr<YoloDetector> _detector;
+
+  /// \brief Camera name
   std::string _camera_name;
+
+  /// \brief Camera parent name
   std::string _camera_parent_name;
+
+  /// \brief Camera topic name
   std::string _camera_image_topic;
+
+  /// \brief Camera info topic name
   std::string _camera_info_topic;
+
+  /// \brief Image detections topic
   std::string _image_detections_topic;
+
+  /// \brief tf2 ros2 buffer
   tf2_ros::Buffer buffer;
+
+  /// \brief Transform listener
   tf2_ros::TransformListener tfl;
 };
 
