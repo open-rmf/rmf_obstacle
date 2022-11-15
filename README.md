@@ -61,3 +61,9 @@ For more information on setup and troubleshooting see [here](rmf_human_detector_
 A ROS 2 node that subscribes to `sensor_msgs::Image` messages published by a monocular camera and runs `Yolo-V4` to detect the presence of humans. The relative pose of the humans with respect to the camera frame is estimated based on heuristics that can be configured through ROS 2 params.
 
 The use case for this node would be to detect crowds from existing CCTV cameras or vision sensors in the facility.
+
+To run:
+
+```bash
+ros2 launch rmf_human_detector human_detector_launch.py
+```
