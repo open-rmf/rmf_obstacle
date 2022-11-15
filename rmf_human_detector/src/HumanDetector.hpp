@@ -26,6 +26,17 @@ namespace rmf_human_detector {
 
 class HumanDetectorData;
 
+/// \brief This class cretes a ROS 2 Node that susbcribes to:
+///
+/// - /camera - Camera feed
+/// - /camera/camera_info - Camera info topic
+/// - /camera/image_detections - Camera detections
+///
+/// and publish to:
+///
+/// - /rmf_obstacles: Topic to publish the detected object in the image
+///
+
 class HumanDetector : public rclcpp::Node
 {
 public:
