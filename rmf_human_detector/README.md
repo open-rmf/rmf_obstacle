@@ -20,7 +20,8 @@ Get YOLOv5s in ONNX format:
 $ git clone https://github.com/ultralytics/yolov5
 $ cd yolov5
 $ pip install -r requirements.txt
-$ python3 export.py --weights yolov5s.pt --include onnx
+$ pip install onnx
+$ python3 export.py --weights yolov5s.pt --include onnx --opset 12
 ```
 This will generate `yolov5s.pt` and `yolov5s.onnx`. Copy the `yolov5s.onnx` file into the folder `rmf_human_detector/assets/` and
 configure human_detector_launch.py to point to the `yolov5s.onnx` file.
