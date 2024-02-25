@@ -28,7 +28,6 @@
 namespace rmf_human_detector_oakd {
 
 //==============================================================================
-// Constructor
 HumanDetector::HumanDetector(
   const rclcpp::NodeOptions& options)
 : Node("rmf_human_detector_oakd", options)
@@ -39,7 +38,7 @@ HumanDetector::HumanDetector(
     "/rmf_obstacles",
     10);
 
-  // Declare and set parameters
+  // Declare parameters
   RCLCPP_INFO(
     this->get_logger(),
     "Configuring rmf_human_detector_oakd...");
@@ -99,14 +98,13 @@ HumanDetector::HumanDetector(
   xoutBoundingBoxDepthMapping->setStreamName("boundingBoxDepthMapping");
   xoutDepth->setStreamName("depth");
 
-  // Set properties for camera nodes
+  // Set properties
   camRgb->setPreviewSize(300, 300);
   camRgb->setResolution(
     dai::ColorCameraProperties::SensorResolution::THE_1080_P);
   camRgb->setInterleaved(false);
   camRgb->setColorOrder(dai::ColorCameraProperties::ColorOrder::BGR);
 
-  // Set properties for mono cameras
   monoLeft->setResolution(
     dai::MonoCameraProperties::SensorResolution::THE_720_P);
   monoLeft->setBoardSocket(dai::CameraBoardSocket::LEFT);
@@ -114,23 +112,24 @@ HumanDetector::HumanDetector(
     dai::MonoCameraProperties::SensorResolution::THE_720_P);
   monoRight->setBoardSocket(dai::CameraBoardSocket::RIGHT);
 
-  // Setting stereo depth node configurations
+  // Setting node configs
   stereo->initialConfig.setConfidenceThreshold(255);
   stereo->setDefaultProfilePreset(
     dai::node::StereoDepth::PresetMode::HIGH_DENSITY);
+  // Align depth map to the perspective of RGB camera, on which inference is done
   stereo->setDepthAlign(dai::CameraBoardSocket::RGB);
   stereo->setOutputSize(
     monoLeft->getResolutionWidth(), monoLeft->getResolutionHeight());
 
-  // Setting spatial detection network configurations
   spatialDetectionNetwork->setBlobPath(nnPath);
   spatialDetectionNetwork->setConfidenceThreshold(0.5f);
   spatialDetectionNetwork->input.setBlocking(false);
   spatialDetectionNetwork->setBoundingBoxScaleFactor(0.7);
   spatialDetectionNetwork->setDepthLowerThreshold(100);
   spatialDetectionNetwork->setDepthUpperThreshold(5000);
+  // spatialDetectionNetwork->setNumInferenceThreads(2);
 
-  // Linking nodes in the pipeline
+  // Link nodes
   monoLeft->out.link(stereo->left);
   monoRight->out.link(stereo->right);
 
@@ -140,20 +139,19 @@ HumanDetector::HumanDetector(
   else
     camRgb->preview.link(xoutRgb->input);
 
-  spatialDetectionNetwork->out.link(xoutNN->input);
+  spatialDetectionNetwork->out.link(xoutNN->input); // detections
   spatialDetectionNetwork->boundingBoxMapping.link(
     xoutBoundingBoxDepthMapping->input);
 
   stereo->depth.link(spatialDetectionNetwork->inputDepth);
   spatialDetectionNetwork->passthroughDepth.link(xoutDepth->input);
 
-  // Function for the detection thread
   auto thread_fn =
     [data = _data]()
     {
       dai::Device device(data->pipeline);
       // Output queues will be used to get the rgb frames and nn data from the outputs defined above
-      auto previewQueue = device.getOutputQueue("rgb", 4, false);
+      auto previewQueue = device.getOutputQueue("rgb", 4, false); // encoding, maxSize, blocking
       auto detectionNNQueue = device.getOutputQueue("detections", 4, false);
       auto xoutBoundingBoxDepthMappingQueue = device.getOutputQueue(
         "boundingBoxDepthMapping", 4, false);
@@ -163,15 +161,13 @@ HumanDetector::HumanDetector(
 
       while (data->run)
       {
-        // Get spatial detections and depth information
         auto inDet = detectionNNQueue->get<dai::SpatialImgDetections>();
         if (inDet == nullptr)
           continue;
 
         auto depth = depthQueue->get<dai::ImgFrame>();
-        cv::Mat depthFrame = depth->getFrame();
+        cv::Mat depthFrame = depth->getFrame();  // depthFrame values are in millimeters
 
-        // Process detections and depth data
         const auto& detections = inDet->detections;
         const auto& boundingBoxMapping =
           xoutBoundingBoxDepthMappingQueue->get<dai::SpatialLocationCalculatorConfig>();
@@ -181,8 +177,13 @@ HumanDetector::HumanDetector(
         const auto num_rois = roiDatas.size();
         if (num_detections != num_rois)
         {
+          // std::cout << "Number of detected bounding boxes [" << num_detections
+          //           << "] does not match number of detected ROIs ["
+          //           << num_rois << "]" << std::endl;
           continue;
         }
+
+        // TODO(YV) track objects and update on when there is significant change in position
 
         cv::Mat depthFrameColor;
         cv::Mat frame;
@@ -208,15 +209,17 @@ HumanDetector::HumanDetector(
           roi = roi.denormalize(depthFrame.cols, depthFrame.rows);
           if (detection_it->label >= data->labels.size())
           {
+            // std::cout << "[Warn] Detected unclassified object." << std::endl;
             continue;
           }
           const std::string& label = data->labels[detection_it->label];
           if (label != "person")
           {
+            // std::cout << "Ignoring non-human detection: " << label << std::endl;
             continue;
           }
 
-          // Constants for human dimensions
+          // TODO(YV): Estimate actual width and height from spatial data.
           const double human_width = 0.6;
           const double human_height = 1.8;
           const double spatial_x = detection_it->spatialCoordinates.x / 1000.0;
@@ -262,9 +265,10 @@ HumanDetector::HumanDetector(
               cv::FONT_HERSHEY_SIMPLEX);
           }
 
-          // Create obstacle message
           rmf_obstacle_msgs::msg::Obstacle obstacle;
           obstacle.header.frame_id = data->frame_id;
+          // TODO(YV): Stamp
+          obstacle.id = obstacle_count;
           obstacle.id = obstacle_count;
           obstacle.level_name = data->level_name;
           obstacle.classification = data->obstacle_classification;
@@ -290,14 +294,14 @@ HumanDetector::HumanDetector(
           cv::waitKey(1);
         }
       }
+
     };
 
-  // Start the detection thread
   _data->detection_thread = std::thread(thread_fn);
+
 }
 
 //==============================================================================
-// Destructor
 HumanDetector::~HumanDetector()
 {
   if (_data->detection_thread.joinable())
@@ -309,5 +313,4 @@ HumanDetector::~HumanDetector()
 
 } // rmf_human_detector_oakd
 
-// Register the component with ROS 2
 RCLCPP_COMPONENTS_REGISTER_NODE(rmf_human_detector_oakd::HumanDetector)
