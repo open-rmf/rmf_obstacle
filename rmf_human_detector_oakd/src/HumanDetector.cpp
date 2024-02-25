@@ -28,6 +28,7 @@
 namespace rmf_human_detector_oakd {
 
 //==============================================================================
+// constructor called
 HumanDetector::HumanDetector(
   const rclcpp::NodeOptions& options)
 : Node("rmf_human_detector_oakd", options)
@@ -38,7 +39,7 @@ HumanDetector::HumanDetector(
     "/rmf_obstacles",
     10);
 
-  // Declare parameters
+  // Declare and set parameters
   RCLCPP_INFO(
     this->get_logger(),
     "Configuring rmf_human_detector_oakd...");
@@ -98,7 +99,7 @@ HumanDetector::HumanDetector(
   xoutBoundingBoxDepthMapping->setStreamName("boundingBoxDepthMapping");
   xoutDepth->setStreamName("depth");
 
-  // Set properties
+  // Set properties for camera node
   camRgb->setPreviewSize(300, 300);
   camRgb->setResolution(
     dai::ColorCameraProperties::SensorResolution::THE_1080_P);
@@ -112,7 +113,7 @@ HumanDetector::HumanDetector(
     dai::MonoCameraProperties::SensorResolution::THE_720_P);
   monoRight->setBoardSocket(dai::CameraBoardSocket::RIGHT);
 
-  // Setting node configs
+  // Setting stereo depth node configs
   stereo->initialConfig.setConfidenceThreshold(255);
   stereo->setDefaultProfilePreset(
     dai::node::StereoDepth::PresetMode::HIGH_DENSITY);
@@ -146,6 +147,7 @@ HumanDetector::HumanDetector(
   stereo->depth.link(spatialDetectionNetwork->inputDepth);
   spatialDetectionNetwork->passthroughDepth.link(xoutDepth->input);
 
+// Function for the detection of the thread
   auto thread_fn =
     [data = _data]()
     {
@@ -294,7 +296,6 @@ HumanDetector::HumanDetector(
           cv::waitKey(1);
         }
       }
-
     };
 
   _data->detection_thread = std::thread(thread_fn);
@@ -302,6 +303,7 @@ HumanDetector::HumanDetector(
 }
 
 //==============================================================================
+// Destructor
 HumanDetector::~HumanDetector()
 {
   if (_data->detection_thread.joinable())
