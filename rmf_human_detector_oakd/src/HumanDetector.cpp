@@ -113,7 +113,7 @@ HumanDetector::HumanDetector(
     dai::MonoCameraProperties::SensorResolution::THE_720_P);
   monoRight->setBoardSocket(dai::CameraBoardSocket::RIGHT);
 
-  // Setting properties for oak-d stereo epth node
+  // Setting properties for oak-d stereo depth node
   stereo->initialConfig.setConfidenceThreshold(255);
   stereo->setDefaultProfilePreset(
     dai::node::StereoDepth::PresetMode::HIGH_DENSITY);
