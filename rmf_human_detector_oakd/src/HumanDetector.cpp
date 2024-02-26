@@ -99,7 +99,7 @@ HumanDetector::HumanDetector(
   xoutBoundingBoxDepthMapping->setStreamName("boundingBoxDepthMapping");
   xoutDepth->setStreamName("depth");
 
-  // Set properties for camera node
+  // Set properties for oak-d camera node
   camRgb->setPreviewSize(300, 300);
   camRgb->setResolution(
     dai::ColorCameraProperties::SensorResolution::THE_1080_P);
