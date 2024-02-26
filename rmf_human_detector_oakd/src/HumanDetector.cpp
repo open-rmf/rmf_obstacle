@@ -28,7 +28,7 @@
 namespace rmf_human_detector_oakd {
 
 //==============================================================================
-// constructor called
+// constructor 
 HumanDetector::HumanDetector(
   const rclcpp::NodeOptions& options)
 : Node("rmf_human_detector_oakd", options)
@@ -113,7 +113,7 @@ HumanDetector::HumanDetector(
     dai::MonoCameraProperties::SensorResolution::THE_720_P);
   monoRight->setBoardSocket(dai::CameraBoardSocket::RIGHT);
 
-  // Setting stereo depth node configs
+  // Setting properties for oak-d stereo epth node
   stereo->initialConfig.setConfidenceThreshold(255);
   stereo->setDefaultProfilePreset(
     dai::node::StereoDepth::PresetMode::HIGH_DENSITY);
@@ -310,6 +310,16 @@ HumanDetector::~HumanDetector()
   {
     _data->run = false;
     _data->detection_thread.join();
+    RCLCPP_INFO(
+      this->get_logger(),
+      "Detection thread has been successfully terminated"
+    );
+  }
+  else{
+    RCLCPP_WARN(
+      this->get_logger(),
+      "Detection thread was not joinable during destruction"
+    );
   }
 }
 
