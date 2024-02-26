@@ -147,7 +147,7 @@ HumanDetector::HumanDetector(
   stereo->depth.link(spatialDetectionNetwork->inputDepth);
   spatialDetectionNetwork->passthroughDepth.link(xoutDepth->input);
 
-// Function for the detection of the thread
+// Run detection in a separate thread
   auto thread_fn =
     [data = _data]()
     {
