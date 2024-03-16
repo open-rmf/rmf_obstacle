@@ -105,6 +105,9 @@ HumanDetector::HumanDetector(const rclcpp::NodeOptions& options)
       // perform detections
       auto [rmf_obstacles, image_detections] = _data->_detector->image_cb(msg);
 
+
+
+
       // populate fields like time stamp, etc
       for (auto& obstacle : rmf_obstacles.obstacles)
       {
