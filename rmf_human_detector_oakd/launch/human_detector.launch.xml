@@ -1,0 +1,33 @@
+<?xml version='1.0' ?>
+
+<launch>
+  <arg name="blob_path" default="" description="The absolute filepath to the NN blob"/>
+  <arg name="sync_nn" default="True" description="Whether to sync the depth and preview frames before making inference"/>
+  <arg name="detector_name" default="rmf_human_detector_oakd" description="The name given to this detector"/>
+  <arg name="frame_id" default="oakd_camera_link" description="The frame ID for the camera"/>
+  <arg name="level_name" default="L1" description="The level or map on which the camera is located"/>
+  <arg name="obstacle_classification" default="human" description="The classificaation to be used to report human obstacles"/>
+  <arg name="debug" default="false" description="If True, the detection results will be visualized"/>
+  <arg name="rmf_frame_id" default="map" description="The frame_id w.r.t which RMF coordinates are defined"/>
+  <arg name="x" default="0" description="x translation between RMF and camera frames"/>
+  <arg name="y" default="0" description="y translation between RMF and camera frames"/>
+  <arg name="z" default="0" description="z translation between RMF and camera frames"/>
+  <arg name="roll" default="0" description="roll rotation between RMF and camera frames"/>
+  <arg name="pitch" default="0" description="pitch rotation between RMF and camera frames"/>
+  <arg name="yaw" default="0" description="yaw rotation between RMF and camera frames"/>
+
+  <node pkg="rmf_human_detector_oakd" exec="human_detector" output="both" name="rmf_human_detector_oakd">
+    <param name="blob_path" value="$(var blob_path)"/>
+    <param name="sync_nn" value="$(var sync_nn)"/>
+    <param name="detector_name" value="$(var detector_name)"/>
+    <param name="frame_id" value="$(var frame_id)"/>
+    <param name="level_name" value="$(var level_name)"/>
+    <param name="obstacle_classification" value="$(var obstacle_classification)"/>
+    <param name="debug" value="$(var debug)"/>
+  </node>
+
+  <node pkg="tf2_ros" exec="static_transform_publisher" output="both" name="oakd_to_rmf_transformer"
+        args ="$(var x) $(var y) $(var z) $(var roll) $(var pitch) $(var yaw) $(var rmf_frame_id) $(var frame_id)">
+  </node>
+
+</launch>
