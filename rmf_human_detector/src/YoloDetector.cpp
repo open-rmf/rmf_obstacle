@@ -365,9 +365,6 @@ YoloDetector::Obstacles YoloDetector::to_rmf_obstacles(
     rmf_obstacle.bbox.center.position.x = intersection.x();
     rmf_obstacle.bbox.center.position.y = intersection.y();
     rmf_obstacle.bbox.center.position.z = intersection.z();
-    rmf_obstacle.bbox.center.position.x = obstacle.x;
-    rmf_obstacle.bbox.center.position.y = obstacle.y;
-    rmf_obstacle.bbox.center.position.z = obstacle.z;
     rmf_obstacle.bbox.size.x = 1.0;
     rmf_obstacle.bbox.size.y = 1.0;
     rmf_obstacle.bbox.size.z = 2.0;
