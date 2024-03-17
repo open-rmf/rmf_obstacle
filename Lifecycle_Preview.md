@@ -2,7 +2,8 @@
 
 If while running  ros2 run rmf_obstacle_detector_laserscan laserscan_detector  you encounter *waiting to configure* as shown below:
 
-![WhatsApp Image 2024-03-16 at 4 58 31 PM](https://github.com/Avisheet/rmf_obstacle_detectors/assets/59338120/5621b525-e7d0-4df8-b0db-59ed5a923e10)
+file:///home/avisheet/Downloads/WhatsApp%20Image%202024-03-16%20at%204.58.31%20PM.jpeg
+
 
 To configure and activate the node, you may enter the following commands:
 
