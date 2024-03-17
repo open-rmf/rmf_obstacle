@@ -2,47 +2,21 @@ name: build
 on:
   pull_request:
   push:
-    branches: [ main ]
-defaults:
-  run:
-    shell: bash
-
+    branches:
+      - main
+  workflow_dispatch:
 jobs:
   build_and_test:
-    name: Build and test
-    runs-on: ubuntu-latest
-    container:
-      image: rostooling/setup-ros-docker:ubuntu-jammy-latest
-    steps:
-      - name: deps
-        uses: ros-tooling/setup-ros@v0.3
-        with:
-          required-ros-distributions: humble
-      - name: install_clang
-        run: sudo apt update && sudo apt install -y clang clang-tools lld
-      - name: build
-        uses: ros-tooling/action-ros-ci@v0.2
-        env:
-          CC: clang
-          CXX: clang++
-        with:
-          target-ros2-distro: humble
-          # build all packages listed in the meta package
-          package-name: |
-            rmf_human_detector_oakd
-            rmf_obstacle_detector_laserscan
-          vcs-repo-file-url: |
-            https://raw.githubusercontent.com/open-rmf/rmf/main/rmf.repos
-          colcon-defaults: |
-            {
-              "build": {
-                "mixin": ["coverage-gcc","lld"]
-              }
-            }
-          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          files: ros_ws/lcov/total_coverage.info
-          flags: tests
-          name: lean_and_mean_codecov_bot
+    name: rmf_obstacle_detectors
+    uses: open-rmf/rmf_ci_templates/.github/workflows/reusable_build.yaml@main
+    with:
+      dist-matrix: |
+          [{"ros_distribution": "iron",
+            "ubuntu_distribution": "jammy"},
+          {"ros_distribution": "rolling",
+            "ubuntu_distribution": "noble"}]
+      # NOTE: Avoid adding comments in the package lines, this can break some of the called scripts in github actions
+      packages: |
+        rmf_human_detector
+        rmf_human_detector_oakd
+        rmf_obstacle_detector_laserscan
