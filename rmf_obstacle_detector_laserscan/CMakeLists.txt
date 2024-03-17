@@ -49,7 +49,7 @@ rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "LaserscanDetector"
   EXECUTABLE laserscan_detector)
 
-#===============================================================================
+#===============================================================================if(BUILD_TESTING)
 install(
   TARGETS
     ${PROJECT_NAME}

@@ -47,12 +47,20 @@ public:
 private:
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<Obstacles>> _obs_pub;
   rclcpp::Subscription<LaserScan>::SharedPtr _scan_sub;
+<<<<<<< HEAD
 
   double _range_threshold;
   double _min_obstacle_size;
 
   std::string _scan_topic_name;
   std::string _level_name;
+=======
+  rclcpp::TimerBase::SharedPtr _process_timer;
+
+  double _range_threshold;
+  std::string _scan_topic_name;
+  std::chrono::nanoseconds _process_period;
+>>>>>>> 8583f44 (Add lifecycle node for processing laser scans)
 
   std::size_t _calibration_sample_count;
   std::vector<LaserScan::ConstSharedPtr> _calibration_scans;
@@ -62,6 +70,10 @@ private:
 
   bool _calibrated;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8583f44 (Add lifecycle node for processing laser scans)
   void process();
   bool calibrate();
 };
