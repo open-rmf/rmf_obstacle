@@ -254,8 +254,8 @@ LaneBlocker::LaneBlocker(const rclcpp::NodeOptions& options)
         const std::string lane_key = get_lane_key(msg->name, i);
         if (_internal_lane_states.find(lane_key) == _internal_lane_states.end())
         {
-          if(!_traffic_graphs[msg->name].get_lane(i).
-              properties().speed_limit().has_value())
+          if (!_traffic_graphs[msg->name].get_lane(i).
+          properties().speed_limit().has_value())
           {
             _internal_lane_states.insert({lane_key, LaneState::Normal});
           }
@@ -286,7 +286,8 @@ LaneBlocker::LaneBlocker(const rclcpp::NodeOptions& options)
 }
 
 //==============================================================================
-void LaneBlocker::obstacle_cb(const message_filters::MessageEvent<Obstacles const>& evt)
+void LaneBlocker::obstacle_cb(
+  const message_filters::MessageEvent<Obstacles const>& evt)
 {
   auto msg = evt.getMessage();
 

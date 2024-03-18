@@ -37,4 +37,5 @@ template<>
 PointCloud convert(const Obstacle& msg);
 } // namespace rmf_obstacle_ros2
 
-#endif // #indef RMF_OBSTACLE_ROS2__OBSTACLES__CONVERT__CONVERTPOINTCLOUDOBSTACLES_HPP
+#endif \
+  // #indef RMF_OBSTACLE_ROS2__OBSTACLES__CONVERT__CONVERTPOINTCLOUDOBSTACLES_HPP
