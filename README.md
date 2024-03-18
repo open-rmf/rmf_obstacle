@@ -13,7 +13,7 @@ Packages that infer the presence of obstacles from sensor inputs.
 
 A ROS 2 node that subscribes to `LaserScan` messages and publishes obstacles to `/rmf_obstacles`.
 
-The node is implemented as an`rclcpp::lifecycle_node`(https://github.com/ros2/demos/tree/rolling/lifecycle) node where upon activation, it calibrates the surroundings based on the range values in the initial few `LaserScan` messages.
+The node is implemented as an[`rclcpp::lifecycle_node`](https://github.com/ros2/demos/tree/rolling/lifecycle) node where upon activation, it calibrates the surroundings based on the range values in the initial few `LaserScan` messages.
 This essentially becomes the "obstacle-free" configuration.
 Subsequently, any changes to the surroundings is detected as an obstacle.
 
