@@ -1,22 +1,31 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>rmf_obstacle_detector_laserscan</name>
+  <name>rmf_obstacle_ros2</name>
   <version>0.0.0</version>
-  <description>Detect and publish obstacles to RMF from laser scans</description>
+  <description>A package containing utilities for managing obstacles in RMF</description>
   <maintainer email="yadunund@openrobotics.org">Yadunund</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
-  <depend>rclcpp_lifecycle</depend>
   <depend>rclcpp_components</depend>
-
+  <depend>rmf_utils</depend>
   <depend>rmf_obstacle_msgs</depend>
+  <depend>rmf_fleet_msgs</depend>
+  <depend>rmf_building_map_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>octomap</depend>
+  <depend>rmf_fleet_adapter</depend>
+  <depend>rmf_traffic</depend>
+  <depend>rmf_traffic_ros2</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
 
-  <test_depend>ament_uncrustify</test_depend>
+  <test_depend>ament_cmake_catch2</test_depend>
+  <test_depend>ament_cmake_uncrustify</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
