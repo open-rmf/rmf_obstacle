@@ -2,10 +2,11 @@
 ![](https://github.com/open-rmf/rmf_obstacle_detectors/workflows/build/badge.svg)
 ![](https://github.com/open-rmf/rmf_obstacle_detectors/workflows/style/badge.svg)
 
-Packages that infer the presence of obstacles from sensor inputs.
-  - [rmf_obstacle_detector_laserscan](#rmf_obstacle_detector_laserscan)
-  - [rmf_human_detector_oakd](#rmf_human_detector_oakd)
+Packages that infer and react to the presence of obstacles from sensor inputs.
   - [rmf_human_detector](#rmf_human_detector)
+  - [rmf_human_detector_oakd](#rmf_human_detector_oakd)
+  - [rmf_obstacle_detector_laserscan](#rmf_obstacle_detector_laserscan)
+  - [rmf_obstacle_ros2](#rmf_obstacle_ros2)
 
 ## rmf_obstacle_detector_laserscan
 ![](../media/rmf_obstacle_detector_laserscan.gif)
@@ -82,8 +83,10 @@ ros2 launch rmf_human_detector human_detector_launch.py
 ## rmf_obstacle_ros2
 The `rmf_obstacle_ros2` package contains ROS 2 nodes that react to the presence of obstacles.
 
+
 At present the `lane_blocker_node` is available which subscribes to `/rmf_obstacles`, and checks whether
 any of the obstacles intersect with any of the lanes across fleet navigation graphs.
+
 If a new intersection is determined, the lanes for the corresponding fleets are closed.
 Previously closed lanes are also opened once the obstacles no longer intersect with the lanes.
 

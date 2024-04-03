@@ -5,6 +5,7 @@
   <version>0.0.0</version>
   <description>RMF Human detector</description>
   <maintainer email="alejandro@openrobtics.org">Alejandro Hernandez</maintainer>
+  <maintainer email="yadunund@openrobtics.org">Yadunund</maintainer>
   <license>Apache License 2.0</license>
   <author email="pranay@openrobtics.org">Pranay Shirodkar</author>
 
