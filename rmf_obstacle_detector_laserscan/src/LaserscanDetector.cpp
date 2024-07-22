@@ -381,6 +381,8 @@ void LaserscanDetector::process()
     return;
 
   auto msg = std::make_unique<Obstacles>();
+  msg->header.frame_id = _latest_scan->header.frame_id;
+  msg->header.stamp = this->get_clock()->now();
   std::size_t id = 0;
   for (const auto& scan : scan_obstacles)
   {
