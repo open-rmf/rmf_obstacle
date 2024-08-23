@@ -38,7 +38,7 @@ HumanDetector::HumanDetector(
     "/rmf_obstacles",
     10);
 
-  // Declare prameters
+  // Declare parameters
   RCLCPP_INFO(
     this->get_logger(),
     "Configuring rmf_human_detector_oakd...");

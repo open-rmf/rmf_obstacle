@@ -6,7 +6,7 @@
   <arg name="detector_name" default="rmf_human_detector_oakd" description="The name given to this detector"/>
   <arg name="frame_id" default="oakd_camera_link" description="The frame ID for the camera"/>
   <arg name="level_name" default="L1" description="The level or map on which the camera is located"/>
-  <arg name="obstacle_classification" default="human" description="The classificaation to be used to report human obstacles"/>
+  <arg name="obstacle_classification" default="human" description="The classification to be used to report human obstacles"/>
   <arg name="debug" default="false" description="If True, the detection results will be visualized"/>
   <arg name="rmf_frame_id" default="map" description="The frame_id w.r.t which RMF coordinates are defined"/>
   <arg name="x" default="0" description="x translation between RMF and camera frames"/>
