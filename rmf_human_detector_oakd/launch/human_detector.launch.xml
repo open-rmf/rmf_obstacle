@@ -3,7 +3,7 @@
 <launch>
   <arg name="blob_path" default="" description="The absolute filepath to the NN blob"/>
   <arg name="sync_nn" default="True" description="Whether to sync the depth and preview frames before making inference"/>
-  <arg name="detector_name" default="rmf_human_detector_oakd" description="The name given to this detector"/>
+  <arg name="detector_name" default="rmf_human_detector_oakd" description="The name given to this detector, used for obstacle topic's source value"/>
   <arg name="frame_id" default="oakd_camera_link" description="The frame ID for the camera"/>
   <arg name="level_name" default="L1" description="The level or map on which the camera is located"/>
   <arg name="obstacle_classification" default="human" description="The classification to be used to report human obstacles"/>

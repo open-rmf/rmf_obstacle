@@ -270,7 +270,7 @@ HumanDetector::HumanDetector(
           obstacle.header.frame_id = data->frame_id;
           // TODO(YV): Stamp
           obstacle.id = obstacle_count;
-          obstacle.id = obstacle_count;
+          obstacle.source = data->detector_name;
           obstacle.level_name = data->level_name;
           obstacle.classification = data->obstacle_classification;
           obstacle.bbox.center.position.x = spatial_x;
