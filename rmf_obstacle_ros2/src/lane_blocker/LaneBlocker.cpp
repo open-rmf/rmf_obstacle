@@ -157,7 +157,8 @@ LaneBlocker::LaneBlocker(const rclcpp::NodeOptions& options)
     this->declare_parameter("continuous_checker", true);
   RCLCPP_INFO(
     this->get_logger(),
-    "Setting parameter continuous_checker to %s", _continuous_checker ? "true" : "false"
+    "Setting parameter continuous_checker to %s",
+    _continuous_checker ? "true" : "false"
   );
 
   _lane_closure_threshold =
@@ -472,17 +473,21 @@ void LaneBlocker::process()
             if (intersect)
             {
               std::cout << "Obstacle position in RMF frame: ["
-                    << o2.center.x << ", "
-                    << o2.center.y << ", "
-                    << o2.center.theta << "]" << std::endl;
-  
+                        << o2.center.x << ", "
+                        << o2.center.y << ", "
+                        << o2.center.theta << "]" << std::endl;
+
               std::cout << "Fleet: " << fleet_name
-                    << ", Lane: " << i
-                    << ", o1(center: [" << o1.center.x << ", " << o1.center.y << ", " << o1.center.theta << "], size_x: " << o1.size_x << ", size_y: " << o1.size_y << ")"
-                    << ", o2(center: [" << o2.center.x << ", " << o2.center.y << ", " << o2.center.theta << "], size_x: " << o2.size_x << ", size_y: " << o2.size_y << ")"
-                    << ", how_much: " << how_much
-                    << ", intersect: " << intersect
-                    << std::endl;
+                        << ", Lane: " << i
+                        << ", o1(center: [" << o1.center.x << ", " <<
+                o1.center.y << ", " << o1.center.theta << "], size_x: " <<
+                o1.size_x << ", size_y: " << o1.size_y << ")"
+                        << ", o2(center: [" << o2.center.x << ", " <<
+                o2.center.y << ", " << o2.center.theta << "], size_x: " <<
+                o2.size_x << ", size_y: " << o2.size_y << ")"
+                        << ", how_much: " << how_much
+                        << ", intersect: " << intersect
+                        << std::endl;
             }
             #endif
             if (intersect || how_much < threshold)
