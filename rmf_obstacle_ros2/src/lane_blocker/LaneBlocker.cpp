@@ -154,7 +154,7 @@ LaneBlocker::LaneBlocker(const rclcpp::NodeOptions& options)
   _max_search_duration = std::chrono::milliseconds(search_millis);
 
   _continuous_checker =
-    this->declare_parameter("continuous_checker", false);
+    this->declare_parameter("continuous_checker", true);
   RCLCPP_INFO(
     this->get_logger(),
     "Setting parameter continuous_checker to %s", _continuous_checker ? "true" : "false"
@@ -303,7 +303,7 @@ void LaneBlocker::obstacle_cb(
     const auto& transform = _tf2_buffer->lookupTransform(
       _rmf_frame,
       obstacle_frame,
-      tf2::TimePointZero
+      rclcpp::Time(obstacle.header.stamp)   // tf2::TimePointZero
     );
 
     // doTransform only works on Stamped messages
@@ -468,6 +468,23 @@ void LaneBlocker::process()
               o2,
               how_much
             );
+            #ifndef NDEBUG
+            if (intersect)
+            {
+              std::cout << "Obstacle position in RMF frame: ["
+                    << o2.center.x << ", "
+                    << o2.center.y << ", "
+                    << o2.center.theta << "]" << std::endl;
+  
+              std::cout << "Fleet: " << fleet_name
+                    << ", Lane: " << i
+                    << ", o1(center: [" << o1.center.x << ", " << o1.center.y << ", " << o1.center.theta << "], size_x: " << o1.size_x << ", size_y: " << o1.size_y << ")"
+                    << ", o2(center: [" << o2.center.x << ", " << o2.center.y << ", " << o2.center.theta << "], size_x: " << o2.size_x << ", size_y: " << o2.size_y << ")"
+                    << ", how_much: " << how_much
+                    << ", intersect: " << intersect
+                    << std::endl;
+            }
+            #endif
             if (intersect || how_much < threshold)
             {
               std::lock_guard<std::mutex> lock(mutex);
@@ -514,25 +531,55 @@ void LaneBlocker::process()
       // Update caches
       for (const auto& lane_key : vicinity_lane_keys)
       {
-        // new obstacle
-        if (obs_lane_it == _obstacle_to_lanes_map.end())
+        // Save old associations for this obstacle
+        std::unordered_set<std::string> old_lanes;
+        auto obs_lane_it = _obstacle_to_lanes_map.find(obstacle_key);
+        if (obs_lane_it != _obstacle_to_lanes_map.end())
+          old_lanes = obs_lane_it->second;
+
+        // Remove this obstacle from all previously associated lanes
+        for (const auto& lane_key : old_lanes)
+        {
+          _lane_to_obstacles_map[lane_key].erase(obstacle_key);
+          lanes_with_changes.insert(lane_key);
+        }
+
+        // Clear the obstacle's lane associations
+        _obstacle_to_lanes_map[obstacle_key].clear();
+
+        // Add new associations
+        for (const auto& lane_key : vicinity_lane_keys)
         {
           _obstacle_to_lanes_map[obstacle_key].insert(lane_key);
           _lane_to_obstacles_map[lane_key].insert(obstacle_key);
           lanes_with_changes.insert(lane_key);
+          RCLCPP_INFO(
+            this->get_logger(),
+            "Obstacle %s now associated with lane %s",
+            obstacle_key.c_str(), lane_key.c_str());
         }
-        // current obstacle
-        else
-        {
-          const auto& existing_lane_keys = obs_lane_it->second;
-          if (existing_lane_keys.find(lane_key) == existing_lane_keys.end())
-          {
-            _obstacle_to_lanes_map[obstacle_key].insert(lane_key);
-            _lane_to_obstacles_map[lane_key].insert(obstacle_key);
-            lanes_with_changes.insert(lane_key);
-          }
-        }
+
+        RCLCPP_INFO(
+          this->get_logger(),
+          "Obstacle %s associated with lane %s",
+          obstacle_key.c_str(), lane_key.c_str());
       }
+
+      #ifdef NDEBUG
+      std::ostringstream oss;
+      oss << "_obstacle_to_lanes_map: {\n";
+      for (const auto& [obs_key, lanes] : _obstacle_to_lanes_map)
+      {
+        oss << "  " << obs_key << ": { ";
+        for (const auto& lane : lanes)
+        {
+          oss << lane << " ";
+        }
+        oss << "}\n";
+      }
+      oss << "}";
+      RCLCPP_INFO(this->get_logger(), "%s", oss.str().c_str());
+      #endif
     }
   }
 
