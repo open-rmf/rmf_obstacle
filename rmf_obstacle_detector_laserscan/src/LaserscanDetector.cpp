@@ -407,6 +407,7 @@ void LaserscanDetector::process()
     msg->obstacles.push_back(std::move(obstacle));
     ++id;
   }
+  msg->header.frame_id = _latest_scan->header.frame_id;
   _obs_pub->publish(std::move(msg));
 }
 
