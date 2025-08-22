@@ -94,3 +94,19 @@ To run:
 ```bash
 ros2 run rmf_obstacle_ros2 lane_blocker_node
 ```
+<!-- This table has been generated using Copilot v1.35.0 with Claude Sonnet 4 -->
+The node accepts the following parameters
+
+| Parameter | Default Value | Description |
+|-----------|---------------|-------------|
+| `rmf_frame_id` | `"map"` | Reference frame for RMF coordinate system |
+| `obstacle_lane_threshold` | `0.25` | Distance threshold (meters) for considering an obstacle in vicinity of a lane |
+| `lane_width` | `0.5` | Width of lanes (meters) used for collision geometry calculations |
+| `tf2_lookup_duration` | `0.5` | Maximum duration (seconds) to wait for TF2 transform lookups |
+| `process_rate` | `1.0` | Frequency (Hz) at which obstacle processing occurs |
+| `cull_rate` | `0.1` | Frequency (Hz) at which expired obstacles are removed |
+| `max_search_millis` | `1000` | Maximum time (milliseconds) to spend searching for lane-obstacle intersections |
+| `continuous_checker` | `true` | Whether to continuously re-check obstacle-lane associations |
+| `lane_closure_threshold` | `1` | Minimum number of obstacles required to close a lane |
+| `speed_limit_threshold` | `3` | Minimum number of obstacles required to apply speed limits to a lane |
+| `speed_limit` | `0.5` | Speed limit (m/s) applied to lanes when speed limiting is triggered |
