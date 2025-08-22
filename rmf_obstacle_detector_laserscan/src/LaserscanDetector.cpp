@@ -116,6 +116,7 @@ auto LaserscanDetector::on_configure(const State& /*previous_state*/)
 
   RCLCPP_INFO(
     this->get_logger(), "Done configuring!");
+
   return CallbackReturn::SUCCESS;
 }
 
@@ -185,6 +186,12 @@ LaserscanDetector::LaserscanDetector(const rclcpp::NodeOptions& options)
 : LifecycleNode("laserscan_obstacle_detector", options),
   _calibrated(false)
 {
+  const bool use_sim_time = this->get_parameter("use_sim_time").as_bool();
+  RCLCPP_INFO(
+    this->get_logger(),
+    "use_sim_time parameter is set to %s", use_sim_time ? "true" : "false"
+  );
+
   _range_threshold = this->declare_parameter("range_threshold", 1.0);
   RCLCPP_INFO(
     this->get_logger(),

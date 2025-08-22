@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- LaserScan obstacle detector -->
+  <node
+    pkg="rmf_obstacle_detector_laserscan"
+    exec="laserscan_detector"
+    name="laserscan_obstacle_detector"
+    output="screen"
+    >
+    <param name="use_sim_time" value="false"/>
+  </node>
+
+  <!-- Use your local lidar reference frame -->
+  <node
+    pkg="tf2_ros"
+    exec="static_transform_publisher"
+    name="static_tf_map_lidar"
+    output="screen"
+    args="--x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id sim_world --child-frame-id lidar">
+  </node>
+
+  <node
+    pkg="ros_gz_bridge"
+    exec="parameter_bridge"
+    name="ros_gz_bridge_laserscan"
+    output="screen"
+    args="/lidar/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan">
+  </node>
+
+</launch>

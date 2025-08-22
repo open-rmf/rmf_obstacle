@@ -106,7 +106,13 @@ LaneBlocker::LaneBlocker(const rclcpp::NodeOptions& options)
       std::make_shared<tf2_ros::TransformListener>(*_tf2_buffer);
   }
 
-  _rmf_frame = this->declare_parameter("rmf_frame_id", "map");
+  const bool use_sim_time = this->get_parameter("use_sim_time").as_bool();
+  RCLCPP_INFO(
+    this->get_logger(),
+    "use_sim_time parameter is set to %s", use_sim_time ? "true" : "false"
+  );
+
+  _rmf_frame = this->declare_parameter("rmf_frame_id", "sim_world");
   RCLCPP_INFO(
     this->get_logger(),
     "Setting parameter rmf_frame_id to %s", _rmf_frame.c_str()

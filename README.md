@@ -20,7 +20,7 @@ Subsequently, any changes to the surroundings are detected as an obstacle.
 
 To run
 ```
-ros2 run rmf_obstacle_detector_laserscan laserscan_detector
+ros2 launch rmf_obstacle_detector_laserscan laserscan_detector.launch.xml
 ```
 To configure and Activate
 ```
