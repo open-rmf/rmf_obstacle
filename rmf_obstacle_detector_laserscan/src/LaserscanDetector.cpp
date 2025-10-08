@@ -116,6 +116,7 @@ auto LaserscanDetector::on_configure(const State& /*previous_state*/)
 
   RCLCPP_INFO(
     this->get_logger(), "Done configuring!");
+
   return CallbackReturn::SUCCESS;
 }
 
@@ -185,6 +186,12 @@ LaserscanDetector::LaserscanDetector(const rclcpp::NodeOptions& options)
 : LifecycleNode("laserscan_obstacle_detector", options),
   _calibrated(false)
 {
+  const bool use_sim_time = this->get_parameter("use_sim_time").as_bool();
+  RCLCPP_INFO(
+    this->get_logger(),
+    "use_sim_time parameter is set to %s", use_sim_time ? "true" : "false"
+  );
+
   _range_threshold = this->declare_parameter("range_threshold", 1.0);
   RCLCPP_INFO(
     this->get_logger(),
@@ -300,7 +307,8 @@ void LaserscanDetector::process()
     this->get_logger(),
     "## Processing latest_scan with angle_min: %.2f, angle_max: %.2f, angle_increment: %.6f, "
     "range_min: %.2f, range_max: %.2f, #ranges: %ld",
-    _latest_scan->angle_min, _latest_scan->angle_max, _latest_scan->angle_increment,
+    _latest_scan->angle_min, _latest_scan->angle_max,
+    _latest_scan->angle_increment,
     _latest_scan->range_min, _latest_scan->range_max,
     _latest_scan->ranges.size()
   );
@@ -407,6 +415,7 @@ void LaserscanDetector::process()
     msg->obstacles.push_back(std::move(obstacle));
     ++id;
   }
+  msg->header.frame_id = _latest_scan->header.frame_id;
   _obs_pub->publish(std::move(msg));
 }
 
